@@ -14,6 +14,10 @@ The Monday-morning view, filtered to the Critical bucket. Each account card surf
 
 ![Dashboard view filtered to the Critical bucket, showing Initech Manufacturing with health score 0, 7 open high/critical tickets, 100% week-over-week usage drop, and a 3-bullet briefing citing specific tickets.](docs/screenshots/dashboard-critical-bucket.png)
 
+A close-up of a single account's briefing card — Globex Robotics, ACC-001, Critical bucket. The "Anthropic" tag in the briefing header is the live-path indicator (the stub renders the same shape with a "Stub" tag). Every bullet ends with a `cites:` row of green chips — `tickets[T-1000]`, `nps[2026-04-16T14:00:00]`, `usage_window.days_to_renewal`, etc. — each one a fixture field the briefing actually rests on. The `usage_window.days_to_renewal` and `usage_window.events_last_7d` chips are the v4/v5 receipts: precomputing those values in the LLM payload is what fixed the day-count hallucinations the v3-vs-v4 eval surfaced.
+
+![Close-up of the Globex Robotics account card showing the Critical badge, health score 26, signal tiles for Usage WoW / Open H/C tickets / Tickets (30d) / Latest NPS, and an expanded This week's briefing section with three bullets each citing specific fixture fields.](docs/screenshots/account-card-globex.png)
+
 ## Quick start
 
 ```bash
