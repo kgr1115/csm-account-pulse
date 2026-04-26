@@ -76,6 +76,43 @@ The fixtures are not the architecture; the interface is. Replacing synthetic dat
 
 The total effort estimate: ~3-5 days for a single CRM, most of it in OAuth setup, schema mapping, and health-score recalibration. The interface boundary is what makes that estimate small instead of "weeks."
 
+## What it would take to add persistence (notes, "actioned" flags, follow-ups)
+
+The dashboard is intentionally read-only and stateless — a CSM acts in their CRM, this surface tells them what to act on. The first feature request that comes back from a real user is "let me mark a briefing as actioned" or "let me note who I emailed." The architecture handles this the same way it handles the CRM swap: a new Protocol, a new adapter, the call sites stay the same.
+
+1. **New Protocol: `NotebookStore`** (next to `DataSource` in `datasource.py` or a sibling file).
+   ```python
+   class NotebookStore(Protocol):
+       def get_notes(self, account_id: str) -> list[Note]: ...
+       def add_note(self, account_id: str, body: str, author: str) -> Note: ...
+       def mark_actioned(self, account_id: str, briefing_id: str, by: str) -> None: ...
+       def list_followups(self, csm: str, due_before: date) -> list[Followup]: ...
+   ```
+
+2. **First implementation: `JsonNotebookStore`** in `notebook_json.py`. Persists to `data/notebooks/{account_id}.json` per account. No DB dependency, no auth, runs on a recruiter's laptop. Same pattern as `FixtureDataSource` — just a JSON file per entity. Atomic writes via tempfile + rename so a crash mid-write can't corrupt a notebook.
+
+3. **Real backend swap (`SqliteNotebookStore`, `PostgresNotebookStore`):** identical shape to the Salesforce swap above — new file, new class, instantiated in `app.py`. Storage choice is a deployment concern, not an application concern.
+
+4. **Wiring in `app.py`:** the dashboard injects `NotebookStore` next to `DataSource`. Each account card gets:
+   - An "Actioned this week" checkbox bound to `mark_actioned`.
+   - A note input bound to `add_note`.
+   - A "Notes from prior weeks" section bound to `get_notes`.
+   None of these touch the briefing path, the health score, or the CRM read path.
+
+5. **Briefings become idempotent over time:** the briefing for a given week + account becomes citeable in next week's briefing ("last week you flagged the SSO regression — it's now resolved per `tickets[T-1042].resolved_at`"). That's a prompt change, not an architecture change.
+
+6. **Out of scope (still):** writing back to the CRM (no `DataSink` for Salesforce). Notes live in our store, not in the CRM. A future "sync to Salesforce activity log" is a separate adapter on the same `NotebookStore` Protocol — `SyncedSalesforceNotebookStore` decorating `JsonNotebookStore` with a write-through to Activity records.
+
+The total effort estimate: ~1-2 days for the JSON adapter and the UI bindings, plus another ~1-2 days when a real DB or write-through-to-CRM becomes the production target. The Protocol boundary is what makes that estimate small instead of "rewrite the dashboard for stateful UX."
+
+## Health scoring — see `health_scoring.md`
+
+The composite 0–100 health score is a hand-tuned linear deduction model — small enough to read top-to-bottom, interpretable enough to defend. `health_scoring.md` documents each weight, the rationale behind the threshold, and what changing it would do. Anyone calibrating the scoring against real CRM data should start there.
+
+## Prompt evals — see `evals/`
+
+The README claims the prompt is "bumped on any wording change," and `prompts/briefing.md` carries a `# v2` header. The corollary every reviewer asks about: *how do you know v2 is better than v1?* `evals/methodology.md` documents the held-out scenario set, the grading rubric, and the run-comparison procedure. `scripts/run_eval.py` is the runner — a prompt bump should land in the same PR as the eval result, not separately.
+
 ## Why the tests matter
 
 The test suite is small (30 tests) but each one defends a specific failure mode that would erode trust in the dashboard or break the recruiter-facing demo:

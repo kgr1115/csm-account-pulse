@@ -1,0 +1,42 @@
+{
+  "_comment": "Five held-out scenarios for briefing-prompt eval. Account IDs are pinned to the current fixture seed (scripts/generate_fixtures.py SEED=26042026); regenerate this file if the seed changes. See evals/methodology.md.",
+  "scenarios": [
+    {
+      "id": "S1",
+      "label": "Multi-signal critical",
+      "account_id": "ACC-001",
+      "expected_bucket": "Critical",
+      "what_it_stresses": "Multiple loud signals at once — renewal soon, open critical tickets, NPS detractor, usage decay. The prompt must prioritize, not enumerate."
+    },
+    {
+      "id": "S2",
+      "label": "Single-signal critical (abandonment)",
+      "account_id": "ACC-002",
+      "expected_bucket": "Critical",
+      "what_it_stresses": "Near-zero recent usage dominates; the real story is abandonment, not ticket volume. Tests whether the prompt over-weights tickets when usage has cratered."
+    },
+    {
+      "id": "S3",
+      "label": "Quiet at-risk",
+      "account_id": "ACC-020",
+      "expected_bucket": "At-Risk",
+      "what_it_stresses": "At-risk by composite score but no single five-alarm signal. Tests whether the prompt finds a defensible angle without inventing severity."
+    },
+    {
+      "id": "S4",
+      "label": "Healthy with renewal soon",
+      "account_id": null,
+      "_resolution": "Pick the first Healthy-bucket account whose renewal_date is within 90 days of today (resolve at runtime).",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Healthy briefings must not invent problems; should pivot to expansion / multi-year renewal motion."
+    },
+    {
+      "id": "S5",
+      "label": "Pure healthy, far renewal",
+      "account_id": null,
+      "_resolution": "Pick the first Healthy-bucket account whose renewal_date is >180 days out.",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Tests graceful 'nothing to do' bullets — no padded platitudes, no invented urgency."
+    }
+  ]
+}
