@@ -113,6 +113,63 @@ def test_every_citation_resolves_to_a_real_fixture_field(all_states: list[Accoun
                     pytest.fail(f"{state.account.id} unknown citation form: {cite}")
 
 
+def test_renewal_prose_matches_cited_renewal_date(all_states: list[AccountState]) -> None:
+    """Bullets that cite `account.renewal_date` must not hallucinate the distance.
+
+    The eval (evals/results/v1_vs_v2.md) caught both v1 and v2 emitting "renewal in
+    14 months" / "renewal in 424 days" for ACC-001 (actual: 58 days). The citation
+    is valid (account.renewal_date is real); the prose is not. The citation
+    validator can't catch this — it only checks that fields exist. This test
+    closes that gap by walking any number+unit phrase ("N days", "N months",
+    "N weeks", "N years") in a bullet that cites account.renewal_date and
+    verifying the value is consistent with the actual fixture distance.
+
+    Stub-side this passes day one — the stub emits "Renewal in {days_to_renewal}
+    days" exactly. Live-path is governed by the v3+ prompt rule that forbids
+    months/weeks/years approximations on this citation.
+    """
+    import re
+
+    pattern = re.compile(r"(\d+)\s*(day|days|week|weeks|month|months|year|years)\b", re.IGNORECASE)
+    # The stub computes days_to_renewal against date.today() (real today), not the
+    # test's TODAY constant. Match that behavior so the test isn't time-coupled —
+    # it has to keep passing on any future calendar day, not just 2026-04-26.
+    today_for_stub = date.today()
+
+    for state in all_states:
+        b = generate_briefing(state, api_key=None)
+        actual_days = (state.account.renewal_date - today_for_stub).days
+        for bullet in b.bullets:
+            if "account.renewal_date" not in bullet.citations:
+                continue
+            for match in pattern.finditer(bullet.text):
+                n = int(match.group(1))
+                unit = match.group(2).lower().rstrip("s")
+                if unit == "day":
+                    assert n == actual_days, (
+                        f"{state.account.id} bullet says '{n} {unit}s' but actual "
+                        f"days_to_renewal={actual_days}: {bullet.text!r}"
+                    )
+                elif unit == "week":
+                    expected = round(actual_days / 7)
+                    assert abs(n - expected) <= 1, (
+                        f"{state.account.id} bullet says '{n} {unit}s' but actual "
+                        f"weeks~={expected} (days={actual_days}): {bullet.text!r}"
+                    )
+                elif unit == "month":
+                    expected = round(actual_days / 30)
+                    assert abs(n - expected) <= 1, (
+                        f"{state.account.id} bullet says '{n} {unit}s' but actual "
+                        f"months~={expected} (days={actual_days}): {bullet.text!r}"
+                    )
+                elif unit == "year":
+                    expected = round(actual_days / 365)
+                    assert abs(n - expected) <= 1, (
+                        f"{state.account.id} bullet says '{n} {unit}s' but actual "
+                        f"years~={expected} (days={actual_days}): {bullet.text!r}"
+                    )
+
+
 def test_critical_accounts_briefings_lead_with_remediation(all_states: list[AccountState]) -> None:
     """For the demo to land, critical-bucket briefings should lead with concrete
     remediation language (tickets, usage), not generic platitudes."""

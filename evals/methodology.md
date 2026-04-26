@@ -34,11 +34,11 @@ Each (scenario, prompt-version) pair gets graded across five dimensions on a 1�
 
 A prompt version's score is the per-dimension mean across the five scenarios. A bump from v_n to v_{n+1} is defensible if v_{n+1} ≥ v_n on every dimension AND strictly better on at least one.
 
-## Why no v1-vs-v2 numbers in this repo (yet)
+## v1-vs-v2 numbers — already on disk
 
-The v1 → v2 bump happened during the project's first improvement cycle and was not eval-gated. v2 is the current snapshot; v1 lives in git history (commit `2413eec` in the private fork — the bootstrap). To produce numbers, restore v1 to a separate file and run the eval — see "How to run a comparison" below.
+The v1 → v2 bump shipped before the eval discipline existed; the comparison was retrofitted afterward and lives at `evals/results/v1_vs_v2.md` (raw outputs: `v1.md`, `v2.md`). v2 is defensible per the rubric (ties on the three objective dimensions, +0.4 specificity, +0.6 action-orientation), with an honest "where v2 still loses" callout for the S4 healthy-with-renewal-soon regression.
 
-The next bump (v2 → v3) should land alongside an eval result file in this directory.
+That retrofit is the floor. The next bump (v2 → v3) should land with its own result file in this directory, run forward — not retrofitted. The test added in `test_renewal_prose_matches_cited_renewal_date` is the regression guardrail closing the renewal-distance hallucination both prior versions surfaced.
 
 ## How to run a comparison
 
@@ -61,4 +61,4 @@ A full run is 5 scenarios × N prompts × 1 Haiku call ≈ 5N calls, currently <
 
 ## Honesty about this artifact's current state
 
-This file describes the methodology and the runner. As of the commit that introduced this directory, **no live runs have been done** — neither `evals/results/v1.md` nor `evals/results/v2.md` exists yet. That asymmetry is the point: the eval discipline is the artifact a recruiter is looking for, and the first result file is the next prompt change's burden.
+This file describes the methodology and the runner; `evals/results/v1_vs_v2.md` is the first result file, written against the live model with hand-graded subjective dimensions. The retrofit is documented in that file's "Methodology asymmetry" section so the asymmetry is visible rather than hidden. The discipline now runs forward: a v3 bump should ship with its own result file written before merge, not after.
