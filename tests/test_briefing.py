@@ -59,10 +59,14 @@ def test_stub_briefing_is_deterministic(all_states: list[AccountState]) -> None:
 def test_every_citation_resolves_to_a_real_fixture_field(all_states: list[AccountState]) -> None:
     """The CLAUDE.md gotcha: the LLM (and the stub) must never cite a signal that
     isn't actually in the input. This is the regression that erodes trust fastest."""
+    from datetime import date as _date
     for state in all_states:
         b = generate_briefing(state, api_key=None)
         ticket_ids = {t.id for t in state.tickets}
         nps_dates = {n.submitted_at.date().isoformat() for n in state.nps_responses}
+        usage_dates = {e.timestamp.date() for e in state.recent_usage_events}
+        usage_min = min(usage_dates) if usage_dates else None
+        usage_max = max(usage_dates) if usage_dates else None
         for bullet in b.bullets:
             for cite in bullet.citations:
                 if cite.startswith("tickets["):
@@ -80,7 +84,23 @@ def test_every_citation_resolves_to_a_real_fixture_field(all_states: list[Accoun
                     assert hasattr(state.account, field), \
                         f"{state.account.id} cited unknown account field {field}"
                 elif cite.startswith("usage_events["):
-                    pass
+                    inner = cite[len("usage_events["):-1]
+                    assert ".." in inner, \
+                        f"{state.account.id} usage_events citation missing range: {cite}"
+                    start_s, end_s = inner.split("..", 1)
+                    try:
+                        start_d = _date.fromisoformat(start_s)
+                        end_d = _date.fromisoformat(end_s)
+                    except ValueError:
+                        pytest.fail(f"{state.account.id} usage_events endpoints not ISO dates: {cite}")
+                    assert start_d <= end_d, \
+                        f"{state.account.id} usage_events range inverted: {cite}"
+                    assert usage_min is not None, \
+                        f"{state.account.id} cited usage_events but has no recent usage events: {cite}"
+                    assert usage_min <= start_d <= usage_max, \
+                        f"{state.account.id} usage_events start {start_d} outside window [{usage_min},{usage_max}]"
+                    assert usage_min <= end_d <= usage_max, \
+                        f"{state.account.id} usage_events end {end_d} outside window [{usage_min},{usage_max}]"
                 else:
                     pytest.fail(f"{state.account.id} unknown citation form: {cite}")
 

@@ -171,7 +171,7 @@ def render_sidebar(states: list[AccountState]) -> tuple[set[HealthBucket], str |
 def main() -> None:
     st.set_page_config(
         page_title="CSM Account Pulse",
-        page_icon=":pulse:",
+        page_icon="📈",
         layout="wide",
     )
 

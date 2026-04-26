@@ -30,9 +30,13 @@ def _load_prompt() -> str:
     return PROMPT_PATH.read_text(encoding="utf-8")
 
 
-def _state_to_llm_payload(state: AccountState) -> dict:
+def _state_to_llm_payload(state: AccountState, today: date | None = None) -> dict:
     """Project the AccountState down to the JSON the LLM sees, keeping it small enough
-    that even a heavy account fits in a Haiku context window without trimming context."""
+    that even a heavy account fits in a Haiku context window without trimming context.
+    `today` anchors the 7-day window; defaults to date.today() to match the stub path."""
+    anchor = today or date.today()
+    cutoff_7d = datetime.combine(anchor - timedelta(days=7), datetime.min.time())
+    events_last_7d = sum(1 for e in state.recent_usage_events if e.timestamp >= cutoff_7d)
     return {
         "account": state.account.model_dump(mode="json"),
         "health": state.health.model_dump(mode="json"),
@@ -40,10 +44,7 @@ def _state_to_llm_payload(state: AccountState) -> dict:
             "start": min((e.timestamp.date() for e in state.recent_usage_events), default=None),
             "end": max((e.timestamp.date() for e in state.recent_usage_events), default=None),
             "total_events": len(state.recent_usage_events),
-            "events_last_7d": sum(
-                1 for e in state.recent_usage_events
-                if (max((ev.timestamp for ev in state.recent_usage_events)) - e.timestamp).days <= 7
-            ) if state.recent_usage_events else 0,
+            "events_last_7d": events_last_7d,
         },
         "tickets": [t.model_dump(mode="json") for t in state.tickets],
         "nps_responses": [n.model_dump(mode="json") for n in state.nps_responses],
@@ -68,9 +69,16 @@ def _stub_briefing(state: AccountState) -> Briefing:
         ))
 
     if h.signals.usage_decay_pct >= 20:
+        decay_citations = ["health.signals.usage_decay_pct"]
+        if state.recent_usage_events:
+            window_end = max(e.timestamp.date() for e in state.recent_usage_events)
+            window_start = window_end - timedelta(days=6)
+            decay_citations.append(
+                f"usage_events[{window_start.isoformat()}..{window_end.isoformat()}]"
+            )
         bullets.append(BriefingBullet(
             text=f"Usage is down {h.signals.usage_decay_pct:.0f}% week-over-week — investigate which team or workflow stopped logging in.",
-            citations=["health.signals.usage_decay_pct"],
+            citations=decay_citations,
         ))
 
     if h.signals.latest_nps_score is not None and h.signals.latest_nps_score <= 6:
