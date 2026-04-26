@@ -363,8 +363,17 @@ def main() -> None:
         nps[acct["id"]] = _gen_nps(acct, rng, profile=nps_profiles[j])
 
     (FIXTURES_DIR / "accounts.json").write_text(json.dumps(accounts, indent=2))
-    # usage_events is the heaviest file; keep compact so the repo stays light to clone.
-    (FIXTURES_DIR / "usage_events.json").write_text(json.dumps(usage, separators=(",", ":")))
+    # usage_events is the heaviest set; split per-account into JSONL files so each
+    # account's events live in their own line-delimited file. account_id is encoded
+    # in the filename, dropped from the row payload.
+    usage_dir = FIXTURES_DIR / "usage"
+    usage_dir.mkdir(parents=True, exist_ok=True)
+    for account_id, events in usage.items():
+        lines = [
+            json.dumps({k: v for k, v in e.items() if k != "account_id"}, separators=(",", ":"))
+            for e in events
+        ]
+        (usage_dir / f"{account_id}.jsonl").write_text("\n".join(lines) + "\n")
     (FIXTURES_DIR / "tickets.json").write_text(json.dumps(tickets, indent=2))
     (FIXTURES_DIR / "nps_responses.json").write_text(json.dumps(nps, indent=2))
 

@@ -47,11 +47,18 @@ class FixtureDataSource(DataSource):
 
     @cached_property
     def _usage_events(self) -> dict[str, list[UsageEvent]]:
-        raw = json.loads((self.fixtures_dir / "usage_events.json").read_text())
-        return {
-            account_id: [UsageEvent.model_validate(e) for e in events]
-            for account_id, events in raw.items()
-        }
+        usage_dir = self.fixtures_dir / "usage"
+        result: dict[str, list[UsageEvent]] = {}
+        for path in sorted(usage_dir.glob("*.jsonl")):
+            account_id = path.stem
+            events: list[UsageEvent] = []
+            for line in path.read_text().splitlines():
+                if not line.strip():
+                    continue
+                e = json.loads(line)
+                events.append(UsageEvent.model_validate({**e, "account_id": account_id}))
+            result[account_id] = events
+        return result
 
     @cached_property
     def _tickets(self) -> dict[str, list[Ticket]]:
