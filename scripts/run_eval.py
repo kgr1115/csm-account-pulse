@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -71,6 +72,61 @@ def _resolve_dynamic_account(scenario: dict, ds: FixtureDataSource) -> str:
             if h.bucket.value == "Healthy" and (a.renewal_date - TODAY).days > 180:
                 return a.id
     raise SystemExit(f"Could not resolve dynamic account for scenario {scenario['id']}")
+
+
+_RENEWAL_PROSE_PATTERN = re.compile(
+    r"(\d+)\s*(day|days|week|weeks|month|months|year|years)\b", re.IGNORECASE
+)
+
+
+def _check_renewal_prose(parsed: dict, state: AccountState, anchor: date) -> list[str]:
+    """For bullets that cite account.renewal_date, check that any prose distance
+    matches the actual fixture distance (or is the literal ISO renewal_date).
+
+    Returns one line per bullet that cites account.renewal_date — either
+    "PASS — bullet cites '<phrase>', actual <N> days" or
+    "FAIL — bullet says '<phrase>', actual <N> days".
+
+    Bullets that cite renewal_date but contain no number+unit phrase produce no
+    line (nothing to grade against).
+
+    This is the live-path observation tool that complements the stub-only
+    test_renewal_prose_matches_cited_renewal_date in tests/test_briefing.py.
+    The eval runner is the right place because pytest is forbidden from making
+    paid API calls (CLAUDE.md), but the eval is opt-in and paid by design.
+    """
+    actual_days = (state.account.renewal_date - anchor).days
+    lines: list[str] = []
+    for i, bullet in enumerate(parsed.get("bullets", []), start=1):
+        citations = bullet.get("citations", [])
+        if "account.renewal_date" not in citations:
+            continue
+        text = bullet.get("text", "")
+        for match in _RENEWAL_PROSE_PATTERN.finditer(text):
+            n = int(match.group(1))
+            unit = match.group(2).lower().rstrip("s")
+            if unit == "day":
+                ok = n == actual_days
+                tolerance = ""
+            elif unit == "week":
+                expected = round(actual_days / 7)
+                ok = abs(n - expected) <= 1
+                tolerance = f" (expected ~{expected} weeks)"
+            elif unit == "month":
+                expected = round(actual_days / 30)
+                ok = abs(n - expected) <= 1
+                tolerance = f" (expected ~{expected} months)"
+            elif unit == "year":
+                expected = round(actual_days / 365)
+                ok = abs(n - expected) <= 1
+                tolerance = f" (expected ~{expected} years)"
+            else:
+                continue
+            verdict = "PASS" if ok else "FAIL"
+            lines.append(
+                f"  - bullet {i}: {verdict} — `{match.group(0)}`, actual {actual_days} days{tolerance}"
+            )
+    return lines
 
 
 def _call_anthropic(prompt: str, payload: dict, api_key: str) -> tuple[str, dict | None, str | None]:
@@ -169,6 +225,12 @@ def main() -> None:
             lines.append(f"**Bullet count:** {len(parsed.get('bullets', []))}")
             cite_counts = [len(b.get("citations", [])) for b in parsed.get("bullets", [])]
             lines.append(f"**Citations per bullet:** {cite_counts}")
+            renewal_lines = _check_renewal_prose(parsed, state, TODAY)
+            if renewal_lines:
+                lines.append("**Renewal prose check:**")
+                lines.extend(renewal_lines)
+            else:
+                lines.append("**Renewal prose check:** N/A (no bullet cites `account.renewal_date` with a numeric distance)")
 
         lines.append("")
         lines.append("**Specificity (1-5):** _grade me_")
