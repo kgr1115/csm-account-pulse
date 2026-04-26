@@ -54,6 +54,11 @@ def _state_to_llm_payload(state: AccountState, today: date | None = None) -> dic
         events_last_7d_start = window_end - timedelta(days=6)
     else:
         window_start = window_end = events_last_7d_start = events_last_7d_end = None
+    # Precomputed so the LLM doesn't do its own date arithmetic — eliminates the
+    # day-count hallucination class observed in the v2-vs-v3 eval (worst case:
+    # "564 days" vs actual 64 for ACC-019). The v4 prompt requires bullets that
+    # cite account.renewal_date to copy this value verbatim.
+    days_to_renewal = (state.account.renewal_date - anchor).days
     return {
         "account": state.account.model_dump(mode="json"),
         "health": state.health.model_dump(mode="json"),
@@ -64,6 +69,7 @@ def _state_to_llm_payload(state: AccountState, today: date | None = None) -> dic
             "events_last_7d": events_last_7d,
             "events_last_7d_start": events_last_7d_start,
             "events_last_7d_end": events_last_7d_end,
+            "days_to_renewal": days_to_renewal,
         },
         "tickets": [t.model_dump(mode="json") for t in state.tickets],
         "nps_responses": [n.model_dump(mode="json") for n in state.nps_responses],
@@ -102,16 +108,36 @@ def _stub_briefing(state: AccountState) -> Briefing:
 
     if h.signals.latest_nps_score is not None and h.signals.latest_nps_score <= 6:
         latest_nps = max(state.nps_responses, key=lambda r: r.submitted_at)
-        bullets.append(BriefingBullet(
-            text=f"Most recent NPS was {h.signals.latest_nps_score} — schedule a discovery call to surface what's behind the dip.",
-            citations=[f"nps[{latest_nps.submitted_at.date().isoformat()}]"],
-        ))
+        # Name the primary contact in the action when we have one — mirrors the
+        # live-path's strongest action-orientation pattern (v2 eval S1/S3 punch).
+        nps_cite = [f"nps[{latest_nps.submitted_at.date().isoformat()}]"]
+        if a.primary_contact_name:
+            nps_text = (
+                f"Most recent NPS was {h.signals.latest_nps_score} — schedule a "
+                f"discovery call with {a.primary_contact_name} to surface what's behind the dip."
+            )
+            nps_cite.append("account.primary_contact_name")
+        else:
+            nps_text = (
+                f"Most recent NPS was {h.signals.latest_nps_score} — schedule a "
+                "discovery call to surface what's behind the dip."
+            )
+        bullets.append(BriefingBullet(text=nps_text, citations=nps_cite))
 
     if 0 <= days_to_renewal <= 90:
-        bullets.append(BriefingBullet(
-            text=f"Renewal in {days_to_renewal} days ({a.renewal_date.isoformat()}) — confirm exec sponsor alignment now, not in week 12.",
-            citations=["account.renewal_date"],
-        ))
+        renewal_cite = ["account.renewal_date"]
+        if a.primary_contact_name:
+            renewal_text = (
+                f"Renewal in {days_to_renewal} days ({a.renewal_date.isoformat()}) — "
+                f"confirm exec sponsor alignment with {a.primary_contact_name} now, not in week 12."
+            )
+            renewal_cite.append("account.primary_contact_name")
+        else:
+            renewal_text = (
+                f"Renewal in {days_to_renewal} days ({a.renewal_date.isoformat()}) — "
+                "confirm exec sponsor alignment now, not in week 12."
+            )
+        bullets.append(BriefingBullet(text=renewal_text, citations=renewal_cite))
 
     if not bullets:
         nps_cite = []

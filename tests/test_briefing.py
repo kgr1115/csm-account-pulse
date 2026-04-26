@@ -206,9 +206,20 @@ def test_state_to_llm_payload_runs_without_api_key(all_states: list[AccountState
     assert uw["events_last_7d_end"] is not None
     assert uw["events_last_7d_end"] == uw["end"]
     assert (uw["events_last_7d_end"] - uw["events_last_7d_start"]).days == 6
+    # New in prompt v4: precomputed days_to_renewal so the LLM doesn't do its own
+    # arithmetic on dates (the v2-vs-v3 eval showed it gets that wrong by hundreds
+    # of days). The value must equal the simple anchor-based subtraction.
+    expected_days = (state.account.renewal_date - TODAY).days
+    assert uw["days_to_renewal"] == expected_days
 
     payload_default_today = _state_to_llm_payload(state)
     assert "usage_window" in payload_default_today
+    # days_to_renewal must be present under the default anchor too — empty events
+    # don't suppress it (it depends only on the account, not on event presence).
+    assert "days_to_renewal" in payload_default_today["usage_window"]
+    assert payload_default_today["usage_window"]["days_to_renewal"] == (
+        state.account.renewal_date - date.today()
+    ).days
 
     empty_state = AccountState(
         account=state.account,
@@ -224,6 +235,9 @@ def test_state_to_llm_payload_runs_without_api_key(all_states: list[AccountState
     assert empty_payload["usage_window"]["end"] is None
     assert empty_payload["usage_window"]["events_last_7d_start"] is None
     assert empty_payload["usage_window"]["events_last_7d_end"] is None
+    # days_to_renewal still computed even when the account has no recent usage
+    # — anchor-based subtraction doesn't need events.
+    assert empty_payload["usage_window"]["days_to_renewal"] == expected_days
 
 
 # ---------------------------------------------------------------------------

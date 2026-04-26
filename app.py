@@ -26,7 +26,7 @@ load_dotenv()
 
 TODAY = date(2026, 4, 26)
 USAGE_LOOKBACK_DAYS = 30
-FIXTURES_VERSION = "v1"  # bump to bust @st.cache_data after fixture regeneration
+FIXTURES_VERSION = "v2"  # bump to bust @st.cache_data after fixture regeneration or LLM payload-shape change
 
 BUCKET_ORDER = {
     HealthBucket.CRITICAL: 0,
