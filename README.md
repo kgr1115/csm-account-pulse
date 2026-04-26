@@ -1,6 +1,8 @@
 # csm-account-pulse
 
-A single-page Streamlit dashboard a CSM opens every Monday to see which of their accounts need attention this week. Aggregates synthetic CRM/usage/ticket data per account, computes a health score, and an LLM generates a 3-bullet "what to focus on this week" briefing per account, with citations to the underlying signals.
+[![CI](https://github.com/kgr1115/csm-account-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/kgr1115/csm-account-pulse/actions/workflows/ci.yml)
+
+A single-page Streamlit dashboard a CSM opens every Monday to see which of their accounts need attention this week. Aggregates synthetic CRM/usage/ticket data per account, computes a health score, and an LLM generates a 3-bullet "what to focus on this week" briefing per account, with citations to the underlying signals. The briefing prompt has shipped through five documented iterations (v1 → v5) — see [`evals/`](evals/) for the receipts.
 
 ## Who this is for
 
@@ -117,11 +119,11 @@ The composite 0–100 health score is a hand-tuned linear deduction model — sm
 
 ## Prompt evals — see `evals/`
 
-The README claims the prompt is "bumped on any wording change," and `prompts/briefing.md` carries a `# v2` header. The corollary every reviewer asks about: *how do you know v2 is better than v1?* `evals/methodology.md` documents the held-out scenario set, the grading rubric, and the run-comparison procedure. `scripts/run_eval.py` is the runner — a prompt bump should land in the same PR as the eval result, not separately.
+The README claims the prompt is "bumped on any wording change," and `prompts/briefing.md` carries a `# v5` header. The corollary every reviewer asks about: *how do you know each version is better than the last?* [`evals/README.md`](evals/README.md) is the v1 → v5 narrative — what each bump targeted, what failure mode it fixed, and what the next-iteration target was. [`evals/methodology.md`](evals/methodology.md) documents the held-out scenario set (5 accounts spanning Critical → Healthy) and the grading rubric. `scripts/run_eval.py` is the runner; it emits per-bullet PASS/FAIL receipts for renewal-prose accuracy alongside the schema/citation checks. Result files commit alongside the prompt change, never separately.
 
 ## Why the tests matter
 
-The test suite is small (30 tests) but each one defends a specific failure mode that would erode trust in the dashboard or break the recruiter-facing demo:
+The test suite is small (31 tests) but each one defends a specific failure mode that would erode trust in the dashboard or break the recruiter-facing demo:
 
 - **`test_every_citation_resolves_to_a_real_fixture_field`** — guards the "the LLM will invent signals" failure mode. Walks every citation in every briefing and asserts each one points at a fixture field that actually exists. Without this, a model could cite `tickets[T-9999]` and look authoritative about a ticket nobody can find.
 - **`test_three_handcrafted_accounts_are_in_critical_bucket`** — guards the demo screenshot. The first three fixtures (Globex, Initech, Hooli) are hand-crafted with overlapping usage decay + ticket spike + bad NPS so the dashboard always has unmistakable signals. A scoring tweak that quietly moves them to "Watch" would gut the demo.
