@@ -68,6 +68,7 @@ def test_every_citation_resolves_to_a_real_fixture_field(all_states: list[Accoun
     """The CLAUDE.md gotcha: the LLM (and the stub) must never cite a signal that
     isn't actually in the input. This is the regression that erodes trust fastest."""
     from datetime import date as _date
+    from briefing import _state_to_llm_payload
     for state in all_states:
         b = generate_briefing(state, api_key=None)
         ticket_ids = {t.id for t in state.tickets}
@@ -75,6 +76,7 @@ def test_every_citation_resolves_to_a_real_fixture_field(all_states: list[Accoun
         usage_dates = {e.timestamp.date() for e in state.recent_usage_events}
         usage_min = min(usage_dates) if usage_dates else None
         usage_max = max(usage_dates) if usage_dates else None
+        usage_window_fields = set(_state_to_llm_payload(state)["usage_window"].keys())
         for bullet in b.bullets:
             for cite in bullet.citations:
                 if cite.startswith("tickets["):
@@ -91,6 +93,10 @@ def test_every_citation_resolves_to_a_real_fixture_field(all_states: list[Accoun
                     field = cite[len("account."):]
                     assert hasattr(state.account, field), \
                         f"{state.account.id} cited unknown account field {field}"
+                elif cite.startswith("usage_window."):
+                    field = cite[len("usage_window."):]
+                    assert field in usage_window_fields, \
+                        f"{state.account.id} cited unknown usage_window field {field}"
                 elif cite.startswith("usage_events["):
                     inner = cite[len("usage_events["):-1]
                     assert ".." in inner, \
