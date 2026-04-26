@@ -1,0 +1,38 @@
+# Claude Code local settings (never commit — contains user-specific permissions / env)
+.claude/settings.local.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Python (remove if not a Python project)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Node (remove if not a JS/TS project)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+.next/
+dist/
+build/
+
+# Secrets / credentials — belt-and-suspenders
+credentials.json
+*.pem
+*.key
+
+# Logs / local scratch
+logs/
+*.log
+tmp/
+scratch/

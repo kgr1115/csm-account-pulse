@@ -1,0 +1,33 @@
+{
+  "_comment": "Example Claude Code settings.json for a csm-account-pulse public/spawned project. Copy to settings.json and trim to the actual tool surface this project needs. The permissions.allow list is what keeps headless sessions fail-loudly instead of silently bypassing safety; scope it tightly.",
+
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git commit --no-verify:*)",
+      "Bash(git commit --no-gpg-sign:*)"
+    ]
+  },
+
+  "_notes_for_adopters": [
+    "Rename to settings.json and trim the allow list to only what this project's agents and skills actually invoke. Smaller surface = safer failures.",
+    "Never add '--dangerously-skip-permissions' to any spawn — the whole point of this file is to make permissions explicit instead.",
+    "settings.local.json is gitignored by default for user-specific overrides.",
+    "A command absent from 'allow' is already denied; the 'deny' list is belt-and-suspenders for the most dangerous flags."
+  ]
+}

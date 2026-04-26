@@ -1,0 +1,5 @@
+# Cross-platform line-ending consistency.
+# All text files: detect as text, normalize to LF in the repo, check out as LF.
+# Eliminates the CRLF/LF warnings on Windows working copies and prevents
+# phantom diffs when the same repo is cloned on Linux vs Windows.
+* text=auto eol=lf

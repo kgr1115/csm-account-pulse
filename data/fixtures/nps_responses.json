@@ -1,0 +1,702 @@
+{
+  "ACC-001": [
+    {
+      "account_id": "ACC-001",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-001",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 4,
+      "comment": "API reliability is unacceptable for our scale."
+    }
+  ],
+  "ACC-002": [
+    {
+      "account_id": "ACC-002",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 4,
+      "comment": "We have lost trust after the last few incidents."
+    },
+    {
+      "account_id": "ACC-002",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 1,
+      "comment": "Support response times have collapsed."
+    }
+  ],
+  "ACC-003": [
+    {
+      "account_id": "ACC-003",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 3,
+      "comment": "API reliability is unacceptable for our scale."
+    },
+    {
+      "account_id": "ACC-003",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 0,
+      "comment": "We have lost trust after the last few incidents."
+    }
+  ],
+  "ACC-004": [
+    {
+      "account_id": "ACC-004",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-004",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-005": [
+    {
+      "account_id": "ACC-005",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-005",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": "Has become core to our weekly operations."
+    }
+  ],
+  "ACC-006": [
+    {
+      "account_id": "ACC-006",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-006",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Reliable and the new dashboard saves us hours."
+    }
+  ],
+  "ACC-007": [
+    {
+      "account_id": "ACC-007",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-007",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Excellent partnership with the CSM team."
+    }
+  ],
+  "ACC-008": [
+    {
+      "account_id": "ACC-008",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-008",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": "Has become core to our weekly operations."
+    }
+  ],
+  "ACC-009": [
+    {
+      "account_id": "ACC-009",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-009",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-010": [
+    {
+      "account_id": "ACC-010",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-010",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 2,
+      "comment": "Support response times have collapsed."
+    }
+  ],
+  "ACC-011": [
+    {
+      "account_id": "ACC-011",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 4,
+      "comment": "Constant outages this quarter, considering alternatives."
+    },
+    {
+      "account_id": "ACC-011",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 3,
+      "comment": "Constant outages this quarter, considering alternatives."
+    }
+  ],
+  "ACC-012": [
+    {
+      "account_id": "ACC-012",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-012",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": "Excellent partnership with the CSM team."
+    }
+  ],
+  "ACC-013": [
+    {
+      "account_id": "ACC-013",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-013",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": "Reliable and the new dashboard saves us hours."
+    }
+  ],
+  "ACC-014": [
+    {
+      "account_id": "ACC-014",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-014",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-015": [
+    {
+      "account_id": "ACC-015",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-015",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-016": [
+    {
+      "account_id": "ACC-016",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-016",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    }
+  ],
+  "ACC-017": [
+    {
+      "account_id": "ACC-017",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-017",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-018": [
+    {
+      "account_id": "ACC-018",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-018",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-019": [
+    {
+      "account_id": "ACC-019",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-019",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Excellent partnership with the CSM team."
+    }
+  ],
+  "ACC-020": [
+    {
+      "account_id": "ACC-020",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-020",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 2,
+      "comment": "API reliability is unacceptable for our scale."
+    }
+  ],
+  "ACC-021": [
+    {
+      "account_id": "ACC-021",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-021",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": null
+    }
+  ],
+  "ACC-022": [
+    {
+      "account_id": "ACC-022",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-022",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": null
+    }
+  ],
+  "ACC-023": [
+    {
+      "account_id": "ACC-023",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-023",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": null
+    }
+  ],
+  "ACC-024": [
+    {
+      "account_id": "ACC-024",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-024",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": null
+    }
+  ],
+  "ACC-025": [
+    {
+      "account_id": "ACC-025",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-025",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 6,
+      "comment": null
+    }
+  ],
+  "ACC-026": [
+    {
+      "account_id": "ACC-026",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-026",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-027": [
+    {
+      "account_id": "ACC-027",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-027",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-028": [
+    {
+      "account_id": "ACC-028",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-028",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-029": [
+    {
+      "account_id": "ACC-029",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-029",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-030": [
+    {
+      "account_id": "ACC-030",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-030",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 6,
+      "comment": null
+    }
+  ],
+  "ACC-031": [
+    {
+      "account_id": "ACC-031",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-031",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Reliable and the new dashboard saves us hours."
+    }
+  ],
+  "ACC-032": [
+    {
+      "account_id": "ACC-032",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-032",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-033": [
+    {
+      "account_id": "ACC-033",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-033",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 6,
+      "comment": null
+    }
+  ],
+  "ACC-034": [
+    {
+      "account_id": "ACC-034",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-034",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 6,
+      "comment": null
+    }
+  ],
+  "ACC-035": [
+    {
+      "account_id": "ACC-035",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-035",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-036": [
+    {
+      "account_id": "ACC-036",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-036",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Reliable and the new dashboard saves us hours."
+    }
+  ],
+  "ACC-037": [
+    {
+      "account_id": "ACC-037",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-037",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-038": [
+    {
+      "account_id": "ACC-038",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-038",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Reliable and the new dashboard saves us hours."
+    }
+  ],
+  "ACC-039": [
+    {
+      "account_id": "ACC-039",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Excellent partnership with the CSM team."
+    },
+    {
+      "account_id": "ACC-039",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 6,
+      "comment": null
+    }
+  ],
+  "ACC-040": [
+    {
+      "account_id": "ACC-040",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 4,
+      "comment": "API reliability is unacceptable for our scale."
+    },
+    {
+      "account_id": "ACC-040",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 2,
+      "comment": "Support response times have collapsed."
+    }
+  ],
+  "ACC-041": [
+    {
+      "account_id": "ACC-041",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-041",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": null
+    }
+  ],
+  "ACC-042": [
+    {
+      "account_id": "ACC-042",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-042",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 4,
+      "comment": "Constant outages this quarter, considering alternatives."
+    }
+  ],
+  "ACC-043": [
+    {
+      "account_id": "ACC-043",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-043",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    }
+  ],
+  "ACC-044": [
+    {
+      "account_id": "ACC-044",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-044",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 2,
+      "comment": "We have lost trust after the last few incidents."
+    }
+  ],
+  "ACC-045": [
+    {
+      "account_id": "ACC-045",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-045",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-046": [
+    {
+      "account_id": "ACC-046",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 7,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-046",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-047": [
+    {
+      "account_id": "ACC-047",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-047",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 1,
+      "comment": "API reliability is unacceptable for our scale."
+    }
+  ],
+  "ACC-048": [
+    {
+      "account_id": "ACC-048",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 9,
+      "comment": "Has become core to our weekly operations."
+    },
+    {
+      "account_id": "ACC-048",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Reliable and the new dashboard saves us hours."
+    }
+  ],
+  "ACC-049": [
+    {
+      "account_id": "ACC-049",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-049",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": null
+    }
+  ],
+  "ACC-050": [
+    {
+      "account_id": "ACC-050",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 6,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-050",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ]
+}
