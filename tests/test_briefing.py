@@ -291,6 +291,16 @@ def test_live_path_falls_back_on_account_id_mismatch(
     assert b.account_id == state.account.id
 
 
+def test_resolve_model_uses_env_var_when_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    from briefing import DEFAULT_ANTHROPIC_MODEL, _resolve_model
+    monkeypatch.delenv("ANTHROPIC_MODEL", raising=False)
+    assert _resolve_model() == DEFAULT_ANTHROPIC_MODEL
+    monkeypatch.setenv("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
+    assert _resolve_model() == "claude-sonnet-4-5-20250929"
+    monkeypatch.setenv("ANTHROPIC_MODEL", "  ")
+    assert _resolve_model() == DEFAULT_ANTHROPIC_MODEL
+
+
 def test_live_path_falls_back_when_anthropic_sdk_missing(
     all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch
 ) -> None:

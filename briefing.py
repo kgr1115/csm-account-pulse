@@ -20,8 +20,18 @@ from models import AccountState, Briefing, BriefingBullet
 
 
 PROMPT_PATH = Path(__file__).parent / "prompts" / "briefing.md"
-ANTHROPIC_MODEL = "claude-haiku-4-5-20251001"
+DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5-20251001"
 MAX_TOKENS = 800
+
+
+def _resolve_model() -> str:
+    """Read the Anthropic model name from env at call time so tests / .env edits
+    take effect without re-importing the module. Falls back to the default snapshot."""
+    return os.environ.get("ANTHROPIC_MODEL", "").strip() or DEFAULT_ANTHROPIC_MODEL
+
+
+# Backwards-compatible alias for code that imports the constant directly.
+ANTHROPIC_MODEL = DEFAULT_ANTHROPIC_MODEL
 
 log = logging.getLogger(__name__)
 
@@ -147,7 +157,7 @@ def _live_briefing(state: AccountState, api_key: str) -> Briefing | None:
 
     try:
         resp = client.messages.create(
-            model=ANTHROPIC_MODEL,
+            model=_resolve_model(),
             max_tokens=MAX_TOKENS,
             system=prompt,
             messages=[{

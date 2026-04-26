@@ -165,10 +165,14 @@ def render_sidebar(states: list[AccountState]) -> tuple[set[HealthBucket], str |
     st.sidebar.divider()
     api_set = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
     st.sidebar.markdown("**LLM source:** " + ("Anthropic API" if api_set else "Deterministic stub"))
-    st.sidebar.caption(
-        "Set `ANTHROPIC_API_KEY` in `.env` to use the live model. "
-        "The dashboard runs end-to-end either way."
-    )
+    if api_set:
+        from briefing import _resolve_model
+        st.sidebar.caption(f"Model: `{_resolve_model()}` (override via `ANTHROPIC_MODEL` in `.env`)")
+    else:
+        st.sidebar.caption(
+            "Set `ANTHROPIC_API_KEY` in `.env` to use the live model. "
+            "The dashboard runs end-to-end either way."
+        )
     if st.sidebar.button("Clear briefing cache"):
         cached_briefing.clear()
         st.rerun()
