@@ -47,14 +47,23 @@ def _state_to_llm_payload(state: AccountState, today: date | None = None) -> dic
     anchor = today or date.today()
     cutoff_7d = datetime.combine(anchor - timedelta(days=7), datetime.min.time())
     events_last_7d = sum(1 for e in state.recent_usage_events if e.timestamp >= cutoff_7d)
+    if state.recent_usage_events:
+        window_start = min(e.timestamp.date() for e in state.recent_usage_events)
+        window_end = max(e.timestamp.date() for e in state.recent_usage_events)
+        events_last_7d_end = window_end
+        events_last_7d_start = window_end - timedelta(days=6)
+    else:
+        window_start = window_end = events_last_7d_start = events_last_7d_end = None
     return {
         "account": state.account.model_dump(mode="json"),
         "health": state.health.model_dump(mode="json"),
         "usage_window": {
-            "start": min((e.timestamp.date() for e in state.recent_usage_events), default=None),
-            "end": max((e.timestamp.date() for e in state.recent_usage_events), default=None),
+            "start": window_start,
+            "end": window_end,
             "total_events": len(state.recent_usage_events),
             "events_last_7d": events_last_7d,
+            "events_last_7d_start": events_last_7d_start,
+            "events_last_7d_end": events_last_7d_end,
         },
         "tickets": [t.model_dump(mode="json") for t in state.tickets],
         "nps_responses": [n.model_dump(mode="json") for n in state.nps_responses],

@@ -140,9 +140,15 @@ def test_state_to_llm_payload_runs_without_api_key(all_states: list[AccountState
     payload = _state_to_llm_payload(state, today=TODAY)
     assert payload["account"]["id"] == state.account.id
     assert "usage_window" in payload
-    assert payload["usage_window"]["total_events"] == len(state.recent_usage_events)
-    assert payload["usage_window"]["events_last_7d"] >= 0
-    assert payload["usage_window"]["events_last_7d"] <= payload["usage_window"]["total_events"]
+    uw = payload["usage_window"]
+    assert uw["total_events"] == len(state.recent_usage_events)
+    assert uw["events_last_7d"] >= 0
+    assert uw["events_last_7d"] <= uw["total_events"]
+    # New in prompt v2: explicit 7-day endpoints so the LLM doesn't have to infer a range.
+    assert uw["events_last_7d_start"] is not None
+    assert uw["events_last_7d_end"] is not None
+    assert uw["events_last_7d_end"] == uw["end"]
+    assert (uw["events_last_7d_end"] - uw["events_last_7d_start"]).days == 6
 
     payload_default_today = _state_to_llm_payload(state)
     assert "usage_window" in payload_default_today
@@ -159,6 +165,8 @@ def test_state_to_llm_payload_runs_without_api_key(all_states: list[AccountState
     assert empty_payload["usage_window"]["events_last_7d"] == 0
     assert empty_payload["usage_window"]["start"] is None
     assert empty_payload["usage_window"]["end"] is None
+    assert empty_payload["usage_window"]["events_last_7d_start"] is None
+    assert empty_payload["usage_window"]["events_last_7d_end"] is None
 
 
 # ---------------------------------------------------------------------------
