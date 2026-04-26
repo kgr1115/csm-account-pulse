@@ -168,7 +168,14 @@ def _live_briefing(state: AccountState, api_key: str) -> Briefing | None:
             text = text.rsplit("```", 1)[0].strip()
         raw = json.loads(text)
         raw["generated_by"] = "anthropic"
-        return Briefing.model_validate(raw)
+        briefing = Briefing.model_validate(raw)
+        if briefing.account_id != state.account.id:
+            log.warning(
+                "LLM returned account_id %s for state %s; falling back to stub",
+                briefing.account_id, state.account.id,
+            )
+            return None
+        return briefing
     except (json.JSONDecodeError, ValidationError) as e:
         log.warning("LLM output failed validation, falling back to stub: %s", e)
         return None

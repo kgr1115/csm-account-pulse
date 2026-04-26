@@ -268,6 +268,29 @@ def test_live_path_falls_back_on_validation_error(all_states: list[AccountState]
     assert b.generated_by == "stub"
 
 
+def test_live_path_falls_back_on_account_id_mismatch(
+    all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """LLM returns a Briefing for a different account than we asked about — must
+    fall back to stub so the dashboard never shows wrong-account briefings."""
+    state = all_states[0]
+    other = all_states[1]
+    assert state.account.id != other.account.id
+    wrong = json.dumps({
+        "account_id": other.account.id,  # mismatched on purpose
+        "headline": "Briefing for the wrong account",
+        "bullets": [
+            {"text": "One.", "citations": ["account.renewal_date"]},
+            {"text": "Two.", "citations": ["account.renewal_date"]},
+            {"text": "Three.", "citations": ["account.renewal_date"]},
+        ],
+    })
+    _install_fake_anthropic(monkeypatch, wrong)
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "stub"
+    assert b.account_id == state.account.id
+
+
 def test_live_path_falls_back_when_anthropic_sdk_missing(
     all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch
 ) -> None:
