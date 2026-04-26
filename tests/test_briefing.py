@@ -3,10 +3,18 @@
      (this is what runs on a recruiter's laptop with no key set).
   2. Every citation in every briefing resolves to a real fixture field
      (this is the "the LLM will invent signals" gotcha from CLAUDE.md).
+
+The live-path tests use a mocked Anthropic client (CLAUDE.md forbids unilateral
+paid API calls). The mock simulates the SDK shape `_live_briefing` reads from
+(resp.content[i].text), so a regression in JSON parsing, code-fence stripping,
+or fallback handling is caught without spending a token.
 """
 
 from __future__ import annotations
 
+import json
+import sys
+import types
 from datetime import date, timedelta
 
 import pytest
@@ -151,3 +159,122 @@ def test_state_to_llm_payload_runs_without_api_key(all_states: list[AccountState
     assert empty_payload["usage_window"]["events_last_7d"] == 0
     assert empty_payload["usage_window"]["start"] is None
     assert empty_payload["usage_window"]["end"] is None
+
+
+# ---------------------------------------------------------------------------
+# Live-path tests with a mocked Anthropic client.
+#
+# `briefing._live_briefing` lazy-imports `from anthropic import Anthropic`,
+# so we install a fake `anthropic` module in sys.modules before generate_briefing
+# is called. The fake client returns a response whose .content[0].text holds the
+# JSON we want to test against. CLAUDE.md forbids unilateral paid API calls; this
+# pattern lets us assert the live branch end-to-end without one.
+# ---------------------------------------------------------------------------
+
+
+class _FakeTextBlock:
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+
+class _FakeResponse:
+    def __init__(self, text: str) -> None:
+        self.content = [_FakeTextBlock(text)]
+
+
+class _FakeMessages:
+    def __init__(self, text: str) -> None:
+        self._text = text
+        self.calls: list[dict] = []
+
+    def create(self, **kwargs: object) -> _FakeResponse:
+        self.calls.append(kwargs)
+        return _FakeResponse(self._text)
+
+
+class _FakeAnthropic:
+    last_instance: "_FakeAnthropic | None" = None
+
+    def __init__(self, api_key: str | None = None, **kwargs: object) -> None:
+        self.api_key = api_key
+        self.messages = _FakeMessages(self.__class__._next_text)
+        _FakeAnthropic.last_instance = self
+
+
+def _install_fake_anthropic(monkeypatch: pytest.MonkeyPatch, response_text: str) -> None:
+    _FakeAnthropic._next_text = response_text  # type: ignore[attr-defined]
+    fake_module = types.ModuleType("anthropic")
+    fake_module.Anthropic = _FakeAnthropic  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "anthropic", fake_module)
+
+
+def _valid_briefing_json(state: AccountState) -> str:
+    return json.dumps({
+        "account_id": state.account.id,
+        "headline": "Test headline for the week",
+        "bullets": [
+            {"text": "Bullet one.", "citations": ["account.renewal_date"]},
+            {"text": "Bullet two.", "citations": ["account.renewal_date"]},
+            {"text": "Bullet three.", "citations": ["account.renewal_date"]},
+        ],
+    })
+
+
+def test_live_path_happy(all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch) -> None:
+    state = all_states[0]
+    _install_fake_anthropic(monkeypatch, _valid_briefing_json(state))
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "anthropic"
+    assert b.account_id == state.account.id
+    assert len(b.bullets) == 3
+
+
+def test_live_path_strips_json_code_fence(all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch) -> None:
+    state = all_states[0]
+    fenced = "```json\n" + _valid_briefing_json(state) + "\n```"
+    _install_fake_anthropic(monkeypatch, fenced)
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "anthropic"
+
+
+def test_live_path_strips_bare_code_fence(all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch) -> None:
+    state = all_states[0]
+    fenced = "```\n" + _valid_briefing_json(state) + "\n```"
+    _install_fake_anthropic(monkeypatch, fenced)
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "anthropic"
+
+
+def test_live_path_falls_back_on_malformed_json(all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch) -> None:
+    state = all_states[0]
+    _install_fake_anthropic(monkeypatch, "this is not json at all")
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "stub"
+
+
+def test_live_path_falls_back_on_validation_error(all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch) -> None:
+    """LLM returns valid JSON but only 2 bullets — Briefing schema requires exactly 3."""
+    state = all_states[0]
+    bad = json.dumps({
+        "account_id": state.account.id,
+        "headline": "Two bullets only",
+        "bullets": [
+            {"text": "One.", "citations": ["account.renewal_date"]},
+            {"text": "Two.", "citations": ["account.renewal_date"]},
+        ],
+    })
+    _install_fake_anthropic(monkeypatch, bad)
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "stub"
+
+
+def test_live_path_falls_back_when_anthropic_sdk_missing(
+    all_states: list[AccountState], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Simulate the SDK not being installed — the lazy import inside _live_briefing
+    must catch ImportError and fall back to stub, not crash the dashboard."""
+    state = all_states[0]
+    # Block the import: setting the entry to None makes `import anthropic` raise ImportError.
+    monkeypatch.setitem(sys.modules, "anthropic", None)
+    b = generate_briefing(state, api_key="sk-test-fake")
+    assert b.generated_by == "stub"
