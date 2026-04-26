@@ -67,8 +67,15 @@ def load_scored_accounts(_cache_version: str = FIXTURES_VERSION) -> list[Account
 
 
 @st.cache_data(show_spinner="Generating briefing...")
-def cached_briefing(account_id: str, _cache_version: str = FIXTURES_VERSION) -> dict:
-    """Briefing keyed by account_id. We pass _cache_version so fixture changes invalidate."""
+def cached_briefing(
+    account_id: str,
+    _llm_mode: str,
+    _cache_version: str = FIXTURES_VERSION,
+) -> dict:
+    """Briefing keyed by (account_id, llm_mode). _llm_mode partitions the cache so
+    that flipping ANTHROPIC_API_KEY between blank and set across reruns doesn't
+    serve stub output under an Anthropic badge (or vice versa). _cache_version
+    handles fixture-file changes — Streamlit caches on input hash, not file content."""
     states = load_scored_accounts(_cache_version)
     state = next(s for s in states if s.account.id == account_id)
     api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip() or None
@@ -130,7 +137,8 @@ def render_account_row(state: AccountState) -> None:
         )
 
         with st.expander("This week's briefing", expanded=h.bucket in (HealthBucket.CRITICAL, HealthBucket.AT_RISK)):
-            briefing = cached_briefing(a.id)
+            llm_mode = "anthropic" if os.environ.get("ANTHROPIC_API_KEY", "").strip() else "stub"
+            briefing = cached_briefing(a.id, _llm_mode=llm_mode)
             badge = "Anthropic" if briefing["generated_by"] == "anthropic" else "Stub (no API key)"
             st.markdown(f"**{briefing['headline']}** &nbsp; *<sub>{badge}</sub>*", unsafe_allow_html=True)
             for bullet in briefing["bullets"]:
