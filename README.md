@@ -76,6 +76,18 @@ The fixtures are not the architecture; the interface is. Replacing synthetic dat
 
 The total effort estimate: ~3-5 days for a single CRM, most of it in OAuth setup, schema mapping, and health-score recalibration. The interface boundary is what makes that estimate small instead of "weeks."
 
+## Why the tests matter
+
+The test suite is small (30 tests) but each one defends a specific failure mode that would erode trust in the dashboard or break the recruiter-facing demo:
+
+- **`test_every_citation_resolves_to_a_real_fixture_field`** — guards the "the LLM will invent signals" failure mode. Walks every citation in every briefing and asserts each one points at a fixture field that actually exists. Without this, a model could cite `tickets[T-9999]` and look authoritative about a ticket nobody can find.
+- **`test_three_handcrafted_accounts_are_in_critical_bucket`** — guards the demo screenshot. The first three fixtures (Globex, Initech, Hooli) are hand-crafted with overlapping usage decay + ticket spike + bad NPS so the dashboard always has unmistakable signals. A scoring tweak that quietly moves them to "Watch" would gut the demo.
+- **`test_state_to_llm_payload_runs_without_api_key`** — guards the live-path code that pytest can't run for free. `_state_to_llm_payload` only executes when an Anthropic key is set, so a NameError or bad import there would only show up on a paid call. This pure-function test keeps the live-path import surface honest.
+- **`test_live_path_*`** (seven tests, mocked Anthropic client) — exercise the live branch end-to-end without spending a token: happy path, ```json fence stripping, bare ``` fence stripping, malformed-JSON fallback, schema-validation fallback, account-id-mismatch fallback, and the SDK-not-installed fallback.
+- **`test_critical_accounts_briefings_lead_with_remediation`** — keeps Critical-bucket briefings concrete. The first bullet must mention tickets, usage, resolution, or the renewal — never a generic "this account needs attention" platitude.
+
+The pattern: every test maps to a specific way the system could lie to the CSM, and the suite is sized to defend exactly those lies.
+
 ## Tech stack
 
 - Python 3.13
