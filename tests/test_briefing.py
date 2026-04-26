@@ -121,3 +121,33 @@ def test_anthropic_path_is_skipped_when_api_key_blank(all_states: list[AccountSt
     state = all_states[0]
     b = generate_briefing(state, api_key="")
     assert b.generated_by == "stub"
+
+
+def test_state_to_llm_payload_runs_without_api_key(all_states: list[AccountState]) -> None:
+    """_state_to_llm_payload only runs in the live path, so a NameError or
+    bad import here would only manifest on a real Anthropic call. Covering the
+    pure-function path keeps the live-path import surface honest."""
+    from briefing import _state_to_llm_payload
+    state = all_states[0]
+    payload = _state_to_llm_payload(state, today=TODAY)
+    assert payload["account"]["id"] == state.account.id
+    assert "usage_window" in payload
+    assert payload["usage_window"]["total_events"] == len(state.recent_usage_events)
+    assert payload["usage_window"]["events_last_7d"] >= 0
+    assert payload["usage_window"]["events_last_7d"] <= payload["usage_window"]["total_events"]
+
+    payload_default_today = _state_to_llm_payload(state)
+    assert "usage_window" in payload_default_today
+
+    empty_state = AccountState(
+        account=state.account,
+        health=state.health,
+        recent_usage_events=[],
+        tickets=state.tickets,
+        nps_responses=state.nps_responses,
+    )
+    empty_payload = _state_to_llm_payload(empty_state, today=TODAY)
+    assert empty_payload["usage_window"]["total_events"] == 0
+    assert empty_payload["usage_window"]["events_last_7d"] == 0
+    assert empty_payload["usage_window"]["start"] is None
+    assert empty_payload["usage_window"]["end"] is None
