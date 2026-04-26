@@ -120,7 +120,7 @@ def main() -> None:
         raise SystemExit(f"Prompt file not found: {args.prompts}")
     prompt = args.prompts.read_text(encoding="utf-8")
 
-    scenarios = json.loads(SCENARIOS_PATH.read_text())["scenarios"]
+    scenarios = json.loads(SCENARIOS_PATH.read_text(encoding="utf-8"))["scenarios"]
     ds = FixtureDataSource()
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
