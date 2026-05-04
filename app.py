@@ -228,9 +228,10 @@ def render_sidebar(states: list[AccountState]) -> tuple[set[HealthBucket], str |
     st.sidebar.caption(f"Data source: `{ds_name}` (override via `DATASOURCE` in `.env`)")
     if ds_name == "salesforce":
         if _salesforce_credentials_present():
-            st.sidebar.warning(
-                "Phase 3b pending — Cases (tickets) and NPS data not yet loaded; "
-                "account health may be artificially inflated."
+            st.sidebar.caption(
+                "NPS data assumes a `NPS_Response__c` custom object with a `Score__c` "
+                "field. Orgs whose NPS schema differs see blank NPS columns — see "
+                "`docs/datasources/salesforce.md` for the override constructor args."
             )
         else:
             st.sidebar.warning(

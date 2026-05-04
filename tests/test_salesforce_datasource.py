@@ -3,20 +3,28 @@
 Mock-only — no live org calls. The integration test stub at the bottom is
 gated behind SF_RUN_LIVE_TESTS=1 and skipped by default.
 
-Required matrix per the architect's verdict:
+Required matrix per the architect's verdicts (3a + 3b):
   1.  list_accounts() round-trip → typed list[Account] with field mapping correct
   2.  get_usage_events() round-trip → typed list[UsageEvent]
   3.  Empty SOQL result for both methods → [] without raising
   4.  Malformed SOQL response (missing required field) → ValueError naming the field
   5.  SalesforceError REQUEST_LIMIT_EXCEEDED → ValueError including reset time
-  6.  get_tickets() returns [] without raising
-  7.  get_nps_responses() returns [] without raising
-  8.  DATASOURCE=salesforce factory branch in app.py — mock the Salesforce constructor
-  9.  Integration stub behind SF_RUN_LIVE_TESTS=1 (documented; skipped)
+  6.  get_tickets() round-trip → typed list[Ticket] with priority/status mapping
+  7.  Unknown priority value → logs-and-skips to "low", does not raise
+  8.  Open ticket (ClosedDate=null) → resolved_at=None
+  9.  get_tickets() SOQL filters on AccountId
+  10. get_nps_responses() round-trip → typed list[NpsResponse]
+  11. get_nps_responses() with INVALID_TYPE error → returns [] without raising
+  12. get_nps_responses() with non-INVALID_TYPE SalesforceError → ValueError
+  13. get_nps_responses() SOQL filters on Account__c
+  14. Configurable nps_object → SOQL uses overridden object name
+  15. DATASOURCE=salesforce factory branch in app.py — mock the Salesforce constructor
+  16. Integration stub behind SF_RUN_LIVE_TESTS=1 (documented; skipped)
 """
 
 from __future__ import annotations
 
+import logging
 import os
 from datetime import date, datetime
 from unittest.mock import MagicMock, patch
@@ -25,7 +33,7 @@ import pytest
 
 from datasource import DataSource
 from datasources import SalesforceDataSource
-from models import Account, UsageEvent
+from models import Account, NpsResponse, Ticket, UsageEvent
 
 
 # ---------------------------------------------------------------------------
@@ -60,6 +68,34 @@ def _task_record(**overrides: object) -> dict:
         "Type": "session_start",
         "Subject": "dashboard",
         "OwnerId": "005xxUSER01",
+    }
+    base.update(overrides)
+    return base
+
+
+def _case_record(**overrides: object) -> dict:
+    base = {
+        "attributes": {"type": "Case", "url": "/services/data/v59.0/sobjects/Case/500xx"},
+        "CaseNumber": "00001042",
+        "AccountId": "001xx0000001",
+        "CreatedDate": "2026-04-20T14:30:00.000+0000",
+        "ClosedDate": "2026-04-22T11:00:00.000+0000",
+        "Priority": "High",
+        "Status": "Closed",
+        "Subject": "Export pipeline failing",
+        "Type": "Bug",
+    }
+    base.update(overrides)
+    return base
+
+
+def _nps_record(**overrides: object) -> dict:
+    base = {
+        "attributes": {"type": "NPS_Response__c", "url": "/services/data/v59.0/sobjects/NPS_Response__c/a01xx"},
+        "Account__c": "001xx0000001",
+        "Created_Date__c": "2026-04-15T08:00:00.000+0000",
+        "Score__c": 8,
+        "Comment__c": "Good support, occasional latency.",
     }
     base.update(overrides)
     return base
@@ -231,22 +267,236 @@ def test_other_salesforce_error_surfaces_with_error_code_in_message() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6 & 7. get_tickets() / get_nps_responses() return [] without raising
+# 6. get_tickets() round-trip with priority/status mapping
 # ---------------------------------------------------------------------------
 
 
-def test_get_tickets_returns_empty_list_without_raising() -> None:
+@pytest.mark.parametrize(
+    "sf_priority,expected_severity",
+    [
+        ("High", "high"),
+        ("Critical", "critical"),
+        ("Medium", "medium"),
+        ("Low", "low"),
+    ],
+)
+def test_get_tickets_round_trip_maps_priority_to_severity(
+    sf_priority: str, expected_severity: str
+) -> None:
+    ds = _build_source([_case_record(Priority=sf_priority)])
+    tickets = ds.get_tickets("001xx0000001")
+
+    assert len(tickets) == 1
+    t = tickets[0]
+    assert isinstance(t, Ticket)
+    assert t.id == "00001042"
+    assert t.account_id == "001xx0000001"
+    assert t.created_at == datetime(2026, 4, 20, 14, 30, 0, tzinfo=t.created_at.tzinfo)
+    assert t.severity == expected_severity
+    assert t.subject == "Export pipeline failing"
+    assert t.category == "Bug"
+
+
+def test_get_tickets_maps_status_values_correctly() -> None:
+    records = [
+        _case_record(CaseNumber="00001001", Status="New", ClosedDate=None),
+        _case_record(CaseNumber="00001002", Status="Working", ClosedDate=None),
+        _case_record(CaseNumber="00001003", Status="Escalated", ClosedDate=None),
+        _case_record(CaseNumber="00001004", Status="On Hold", ClosedDate=None),
+        _case_record(CaseNumber="00001005", Status="Closed"),
+    ]
+    ds = _build_source(records)
+    tickets = ds.get_tickets("001xx0000001")
+    statuses = [t.status for t in tickets]
+    assert statuses == ["open", "open", "open", "pending", "resolved"]
+
+
+# ---------------------------------------------------------------------------
+# 7. Unknown priority value → logs-and-skips to "low", does not raise
+# ---------------------------------------------------------------------------
+
+
+def test_unknown_priority_value_logs_and_floors_to_low(caplog: pytest.LogCaptureFixture) -> None:
+    ds = _build_source([_case_record(Priority="Urgent")])
+    with caplog.at_level(logging.INFO, logger="datasources.salesforce_source"):
+        tickets = ds.get_tickets("001xx0000001")
+
+    assert len(tickets) == 1
+    assert tickets[0].severity == "low"
+    assert any("Urgent" in record.message for record in caplog.records)
+
+
+def test_unknown_status_value_logs_and_floors_to_open(caplog: pytest.LogCaptureFixture) -> None:
+    ds = _build_source([_case_record(Status="In Triage", ClosedDate=None)])
+    with caplog.at_level(logging.INFO, logger="datasources.salesforce_source"):
+        tickets = ds.get_tickets("001xx0000001")
+
+    assert len(tickets) == 1
+    assert tickets[0].status == "open"
+    assert any("In Triage" in record.message for record in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# 8. Open ticket (ClosedDate=null) → resolved_at=None
+# ---------------------------------------------------------------------------
+
+
+def test_open_ticket_with_null_closed_date_yields_resolved_at_none() -> None:
+    ds = _build_source([_case_record(ClosedDate=None, Status="Working")])
+    tickets = ds.get_tickets("001xx0000001")
+    assert len(tickets) == 1
+    assert tickets[0].resolved_at is None
+    assert tickets[0].status == "open"
+
+
+# ---------------------------------------------------------------------------
+# 9. get_tickets() SOQL filters on AccountId
+# ---------------------------------------------------------------------------
+
+
+def test_get_tickets_issues_soql_with_account_id_filter() -> None:
+    client = MagicMock()
+    client.query_all.return_value = {"records": []}
+    ds = SalesforceDataSource(client=client)
+    ds.get_tickets("001xx0000001")
+    soql = client.query_all.call_args[0][0]
+    assert "FROM Case" in soql
+    assert "AccountId = '001xx0000001'" in soql
+    # Confirm the default-mapped Case fields appear in the SELECT clause.
+    for sf_field in ("CaseNumber", "CreatedDate", "ClosedDate", "Priority", "Status", "Subject", "Type"):
+        assert sf_field in soql
+
+
+# ---------------------------------------------------------------------------
+# 10. get_nps_responses() round-trip
+# ---------------------------------------------------------------------------
+
+
+def test_get_nps_responses_round_trip_maps_fields_correctly() -> None:
+    ds = _build_source([_nps_record()])
+    responses = ds.get_nps_responses("001xx0000001")
+
+    assert len(responses) == 1
+    r = responses[0]
+    assert isinstance(r, NpsResponse)
+    assert r.account_id == "001xx0000001"
+    assert r.submitted_at == datetime(2026, 4, 15, 8, 0, 0, tzinfo=r.submitted_at.tzinfo)
+    assert r.score == 8
+    assert r.comment == "Good support, occasional latency."
+
+
+def test_get_nps_responses_handles_null_comment() -> None:
+    ds = _build_source([_nps_record(Comment__c=None)])
+    responses = ds.get_nps_responses("001xx0000001")
+    assert len(responses) == 1
+    assert responses[0].comment is None
+
+
+# ---------------------------------------------------------------------------
+# 11. INVALID_TYPE error → returns [] without raising
+# ---------------------------------------------------------------------------
+
+
+def test_get_nps_responses_returns_empty_when_object_not_present() -> None:
+    from simple_salesforce.exceptions import SalesforceError
+
+    err = SalesforceError(
+        url="https://example.my.salesforce.com/services/data/v59.0/query/",
+        status=400,
+        resource_name="query",
+        content=[
+            {"errorCode": "INVALID_TYPE", "message": "sObject type 'NPS_Response__c' is not supported."}
+        ],
+    )
+    client = MagicMock()
+    client.query_all.side_effect = err
+    client.headers = {}
+    ds = SalesforceDataSource(client=client)
+
+    result = ds.get_nps_responses("001xx0000001")
+    assert result == []
+
+
+# ---------------------------------------------------------------------------
+# 12. Non-INVALID_TYPE SalesforceError → ValueError surfaces
+# ---------------------------------------------------------------------------
+
+
+def test_get_nps_responses_surfaces_non_invalid_type_errors() -> None:
+    from simple_salesforce.exceptions import SalesforceError
+
+    err = SalesforceError(
+        url="https://example.my.salesforce.com/services/data/v59.0/query/",
+        status=400,
+        resource_name="query",
+        content=[{"errorCode": "INVALID_FIELD", "message": "No such column 'Score__c' on entity 'NPS_Response__c'"}],
+    )
+    client = MagicMock()
+    client.query_all.side_effect = err
+    client.headers = {}
+    ds = SalesforceDataSource(client=client)
+
+    with pytest.raises(ValueError) as exc_info:
+        ds.get_nps_responses("001xx0000001")
+    assert "INVALID_FIELD" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# 13. NPS SOQL filters on Account__c
+# ---------------------------------------------------------------------------
+
+
+def test_get_nps_responses_issues_soql_with_account_filter() -> None:
+    client = MagicMock()
+    client.query_all.return_value = {"records": []}
+    ds = SalesforceDataSource(client=client)
+    ds.get_nps_responses("001xx0000001")
+    soql = client.query_all.call_args[0][0]
+    assert "FROM NPS_Response__c" in soql
+    assert "Account__c = '001xx0000001'" in soql
+    for sf_field in ("Account__c", "Created_Date__c", "Score__c", "Comment__c"):
+        assert sf_field in soql
+
+
+# ---------------------------------------------------------------------------
+# 14. Configurable nps_object → SOQL uses overridden object name
+# ---------------------------------------------------------------------------
+
+
+def test_get_nps_responses_respects_configurable_nps_object_and_score_field() -> None:
+    client = MagicMock()
+    client.query_all.return_value = {"records": []}
+    ds = SalesforceDataSource(
+        client=client,
+        nps_object="Survey_Response__c",
+        score_field="Rating__c",
+    )
+    ds.get_nps_responses("001xx0000001")
+    soql = client.query_all.call_args[0][0]
+    assert "FROM Survey_Response__c" in soql
+    assert "Rating__c" in soql
+    # The default object name must NOT leak through when overridden.
+    assert "FROM NPS_Response__c" not in soql
+    assert "Score__c" not in soql
+
+
+# ---------------------------------------------------------------------------
+# Empty result coverage for the new methods (mirrors test 3 for accounts/usage)
+# ---------------------------------------------------------------------------
+
+
+def test_get_tickets_returns_empty_list_for_empty_soql_result() -> None:
     ds = _build_source([])
     assert ds.get_tickets("001xx0000001") == []
 
 
-def test_get_nps_responses_returns_empty_list_without_raising() -> None:
+def test_get_nps_responses_returns_empty_list_for_empty_soql_result() -> None:
     ds = _build_source([])
     assert ds.get_nps_responses("001xx0000001") == []
 
 
 # ---------------------------------------------------------------------------
-# 8. app.py factory branch — mock the Salesforce constructor
+# 15. app.py factory branch — mock the Salesforce constructor
 # ---------------------------------------------------------------------------
 
 
@@ -282,7 +532,7 @@ def test_app_factory_falls_back_to_fixtures_when_creds_missing(monkeypatch: pyte
 
 
 # ---------------------------------------------------------------------------
-# 10. Subclass + interface conformance
+# Subclass + interface conformance
 # ---------------------------------------------------------------------------
 
 
@@ -291,7 +541,7 @@ def test_salesforce_datasource_is_a_datasource() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 9. Integration stub — gated behind SF_RUN_LIVE_TESTS=1
+# 16. Integration stub — gated behind SF_RUN_LIVE_TESTS=1
 # ---------------------------------------------------------------------------
 
 
