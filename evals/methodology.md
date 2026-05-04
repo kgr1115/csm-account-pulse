@@ -8,7 +8,7 @@ The artifact under test is `prompts/briefing.md` — the system prompt sent to t
 
 ## The held-out scenario set
 
-Five fixture accounts span the dashboard's full output range. Each one stresses a different facet the prompt has to handle.
+Twelve fixture accounts span the dashboard's full output range. Each one stresses a different facet the prompt has to handle. S1–S5 are drawn from the seed-generated fixture set; S6–S12 are hand-crafted accounts authored to cover shapes the seed didn't produce (see "Scenario expansion policy" below).
 
 | Scenario | Fixture | Bucket | What it stresses |
 |---|---|---|---|
@@ -17,8 +17,26 @@ Five fixture accounts span the dashboard's full output range. Each one stresses 
 | S3 — Quiet at-risk | `ACC-020` (procedural at-risk) | At-Risk | At-risk by health score but with no obvious five-alarm signal — Watch-bordering. Tests whether the prompt finds a defensible angle without inventing one. |
 | S4 — Healthy with renewal soon | the first Healthy account whose renewal is within 90 days | Healthy | Tests that "healthy" briefings don't invent problems; should pivot to expansion / renewal motion language. |
 | S5 — Pure healthy | a Healthy account with renewal >180 days out | Healthy | Tests that briefings handle "nothing to do" gracefully without padding the bullets with platitudes. |
+| S6 — No NPS data at all | `ACC-051` (Cyberdyne Trust) | Healthy | Zero NPS responses on the account. Tests whether the prompt hallucinates NPS signals or grounds the briefing only in usage and tickets. |
+| S7 — High ticket volume, zero usage decay | `ACC-052` (Tyrell Health Networks) | Healthy | Eight tickets in 30 days but flat usage and the lone open ticket is medium severity. Tests whether the prompt over-weights ticket count when usage and NPS are fine. |
+| S8 — Long renewal horizon, all green | `ACC-053` (Stark Renewables) | Healthy | Renewal 18+ months out, NPS promoter, no tickets, growing usage. Tests whether the prompt invents urgency or stays genuinely quiet. |
+| S9 — Renewal in 7 days, healthy | `ACC-054` (Wonka Confections) | Healthy | Imminent renewal but otherwise quiet. Pressure-tests the renewal-prose accuracy rules — surfaces "renewal is imminent" without fabricating risk. |
+| S10 — Mixed severity, none open H/C | `ACC-055` (Soylent Foods Group) | Healthy | Five tickets in 30 days spanning low/medium/high severity, all resolved. Tests whether `ticket_volume_30d` gets over-weighted vs. `open_high_severity_tickets`. |
+| S11 — Single NPS detractor | `ACC-056` (Aperture Field Services) | Watch | One NPS score of 2, otherwise quiet. Tests whether a single detractor alone is enough to surface as a bullet without inventing supporting signals. |
+| S12 — New account, thin window | `ACC-057` (Pied Piper Compression) | Healthy | Contract started ~3 weeks ago; thin usage window, no NPS yet, one resolved ticket. Tests whether the prompt hallucinates baseline data or cites the thin window explicitly. |
 
-The five accounts are pinned in `evals/scenarios.json`. The selection is deterministic from the fixture seed; if the fixture generator is rerun, the IDs may shift and the scenarios file should be regenerated.
+The twelve accounts are pinned in `evals/scenarios.json`. S1–S5 are deterministic from the fixture seed; if the seed-generator is rerun the IDs may shift and the scenarios file should be regenerated. S6–S12 are hand-crafted, live in the reserved ACC-051..ACC-070 range, and do not move when the seed regenerates.
+
+## Scenario expansion policy
+
+The original five scenarios were drawn from the seed-generated fixture set (`scripts/generate_fixtures.py` SEED=26042026, accounts ACC-001..ACC-050). That set is uniform — the seed produces a particular distribution of usage, tickets, and NPS shapes — so several real-world account shapes were missing from coverage: accounts with no NPS responses, accounts with high ticket volume but no usage decay, accounts on long renewal horizons with all signals green, accounts with imminent renewals on healthy footing, accounts with mixed-severity-but-resolved tickets, accounts with a single NPS detractor as the only signal, and brand-new accounts with thin usage windows. Hand-crafting fixture accounts to cover those shapes is the only way to test prompt behavior against them.
+
+To keep the seed-generated set reproducible while admitting hand-crafted additions, the account ID range is partitioned:
+
+- `ACC-001`..`ACC-050` — seed-generated. Reproducible by running `scripts/generate_fixtures.py` against the pinned seed.
+- `ACC-051`..`ACC-070` — **reserved for hand-crafted eval scenarios**. Do not reuse these IDs in the seed generator; do not renumber existing seed-generated accounts into this range. New eval scenarios that need a fixture shape the seed doesn't produce go here.
+
+When adding a new scenario, append a fixture account in the reserved range, append the scenario entry to `evals/scenarios.json` with the next `S<n>` ID, and document the archetype in the table above. Bumping the prompt against the expanded set is no different from bumping against the original five — same rubric, same defensibility test (ties on every dimension and wins on at least one).
 
 ## Grading rubric
 
@@ -32,7 +50,7 @@ Each (scenario, prompt-version) pair gets graded across five dimensions on a 1�
 | **Specificity** | no | Bullets reference specific tickets, dates, percentages, days-to-renewal. | "This account needs attention" — generic. |
 | **Action orientation** | no | The CSM knows what to do this week — call X, resolve Y, send Z. | Describes the situation without telling the CSM what to do. |
 
-A prompt version's score is the per-dimension mean across the five scenarios. A bump from v_n to v_{n+1} is defensible if v_{n+1} ≥ v_n on every dimension AND strictly better on at least one.
+A prompt version's score is the per-dimension mean across the twelve scenarios. A bump from v_n to v_{n+1} is defensible if v_{n+1} ≥ v_n on every dimension AND strictly better on at least one.
 
 ## v1-vs-v2 numbers — already on disk
 
@@ -57,7 +75,7 @@ python scripts/run_eval.py --prompts evals/old_prompts/briefing.v1.md --label v1
 
 ## Cost note
 
-A full run is 5 scenarios × N prompts × 1 Haiku call ≈ 5N calls, currently <$0.05/run with the default model (`claude-haiku-4-5-20251001`). Running the eval is cheap enough that there's no excuse not to gate prompt bumps on it.
+A full run is 12 scenarios × N prompts × 1 Haiku call ≈ 12N calls, currently $0.06–0.10 per run with the default model (`claude-haiku-4-5-20251001`). Running the eval is still cheap enough that there's no excuse not to gate prompt bumps on it.
 
 ## Honesty about this artifact's current state
 

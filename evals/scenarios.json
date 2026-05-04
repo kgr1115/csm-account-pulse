@@ -1,5 +1,5 @@
 {
-  "_comment": "Five held-out scenarios for briefing-prompt eval. Account IDs are pinned to the current fixture seed (scripts/generate_fixtures.py SEED=26042026); regenerate this file if the seed changes. See evals/methodology.md.",
+  "_comment": "Twelve held-out scenarios for briefing-prompt eval. S1-S5 use account IDs pinned to the current fixture seed (scripts/generate_fixtures.py SEED=26042026); S6-S12 use hand-crafted fixture accounts in the reserved ACC-051..ACC-070 range, distinct from the seed. See evals/methodology.md (Scenario expansion policy).",
   "scenarios": [
     {
       "id": "S1",
@@ -37,6 +37,55 @@
       "_resolution": "Pick the first Healthy-bucket account whose renewal_date is >180 days out.",
       "expected_bucket": "Healthy",
       "what_it_stresses": "Tests graceful 'nothing to do' bullets — no padded platitudes, no invented urgency."
+    },
+    {
+      "id": "S6",
+      "label": "No NPS data at all",
+      "account_id": "ACC-051",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Account has zero NPS responses. Tests whether the prompt hallucinates NPS signals or gracefully cites only what's present (usage, tickets)."
+    },
+    {
+      "id": "S7",
+      "label": "High ticket volume, zero usage decay",
+      "account_id": "ACC-052",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Eight tickets in 30 days but usage is flat (decay = 0%) and the open ticket is medium severity. Tests whether the prompt over-weights ticket count when usage and NPS are fine."
+    },
+    {
+      "id": "S8",
+      "label": "Long renewal horizon, all signals green",
+      "account_id": "ACC-053",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Renewal 18+ months out, healthy growing usage, no tickets, NPS promoter (10). Tests whether the prompt manufactures urgency or stays genuinely quiet."
+    },
+    {
+      "id": "S9",
+      "label": "Renewal in 7 days, healthy signals",
+      "account_id": "ACC-054",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Imminent renewal but otherwise quiet (no tickets, NPS=9, flat usage). Pressure-tests the renewal-prose accuracy rules — should surface 'renewal is imminent' without fabricating risk."
+    },
+    {
+      "id": "S10",
+      "label": "Mixed severity tickets, no open high/critical",
+      "account_id": "ACC-055",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Five tickets in the 30-day window spanning low/medium/high severity, but ALL resolved. Tests whether ticket_volume_30d gets over-weighted vs. open_high_severity_tickets."
+    },
+    {
+      "id": "S11",
+      "label": "Single NPS detractor, no other signals",
+      "account_id": "ACC-056",
+      "expected_bucket": "Watch",
+      "what_it_stresses": "One NPS score of 2, otherwise quiet (healthy usage, no tickets). Tests whether a single NPS detractor alone is enough to surface as a bullet without inventing supporting signals."
+    },
+    {
+      "id": "S12",
+      "label": "New account, <30 days of data",
+      "account_id": "ACC-057",
+      "expected_bucket": "Healthy",
+      "what_it_stresses": "Contract started ~3 weeks ago; usage window is thin (10 events total), no NPS yet, one resolved ticket. Tests whether the prompt hallucinates baseline data or cites the thin window explicitly."
     }
   ]
 }

@@ -16,11 +16,13 @@ def ds() -> FixtureDataSource:
     return FixtureDataSource()
 
 
-def test_list_accounts_returns_50_typed_accounts(ds: FixtureDataSource) -> None:
+def test_list_accounts_returns_typed_accounts(ds: FixtureDataSource) -> None:
+    """50 seed-generated (ACC-001..ACC-050) plus 7 hand-crafted eval-scenario
+    accounts (ACC-051..ACC-057) — see evals/methodology.md "Scenario expansion policy"."""
     accounts = ds.list_accounts()
-    assert len(accounts) == 50
+    assert len(accounts) == 57
     assert all(isinstance(a, Account) for a in accounts)
-    assert len({a.id for a in accounts}) == 50, "account ids must be unique"
+    assert len({a.id for a in accounts}) == 57, "account ids must be unique"
 
 
 def test_account_ids_match_id_format(ds: FixtureDataSource) -> None:

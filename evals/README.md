@@ -4,7 +4,7 @@ This directory is the receipt for "the prompt is bumped on any wording change." 
 
 ## The held-out scenario set
 
-Five fixture accounts pinned in [`scenarios.json`](scenarios.json) span the dashboard's full output range. Each one stresses a different facet the prompt has to handle: multi-signal critical (S1), single-signal critical / abandonment (S2), quiet at-risk (S3), healthy with renewal soon (S4), and pure healthy (S5). The selection is deterministic from the fixture seed.
+Twelve fixture accounts pinned in [`scenarios.json`](scenarios.json) span the dashboard's full output range. S1–S5 are drawn from the seed-generated fixture set (multi-signal critical, single-signal critical / abandonment, quiet at-risk, healthy with renewal soon, pure healthy). S6–S12 are hand-crafted accounts in the reserved ACC-051..ACC-070 range covering shapes the seed doesn't produce: no NPS data at all (S6), high ticket volume with zero usage decay (S7), long renewal horizon all green (S8), renewal in 7 days healthy (S9), mixed severity tickets none open H/C (S10), single NPS detractor (S11), and new account with thin window (S12). See [`methodology.md`](methodology.md) for the full table and the scenario expansion policy.
 
 ## Grading rubric
 
@@ -43,6 +43,6 @@ python scripts/run_eval.py --prompts prompts/briefing.md --label v5
 # Commit the result file alongside the prompt change.
 ```
 
-Cost: roughly $0.025–0.05 per run (5 scenarios × 1 Haiku call each at the default model). Cheap enough that prompt bumps should always gate on an eval run, never ship without one. The methodology asymmetry on retrofits is documented in `results/v1_vs_v2.md`.
+Cost: roughly $0.06–0.10 per run (12 scenarios × 1 Haiku call each at the default model). Still cheap enough that prompt bumps should always gate on an eval run, never ship without one. The methodology asymmetry on retrofits is documented in `results/v1_vs_v2.md`.
 
 `run_eval.py` does **not** auto-grade specificity or action-orientation — those are intentionally human-judgment to keep the bar honest. It does emit machine-checked PASS/FAIL lines for renewal-prose accuracy and citation form (when extended).

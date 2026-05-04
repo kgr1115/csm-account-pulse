@@ -1792,5 +1792,176 @@
       "subject": "Webhook signature validation failing",
       "category": "billing"
     }
+  ],
+  "ACC-051": [
+    {
+      "id": "T-2051",
+      "account_id": "ACC-051",
+      "created_at": "2026-04-02T10:30:00",
+      "resolved_at": "2026-04-04T15:00:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "User cannot reset MFA token",
+      "category": "access"
+    },
+    {
+      "id": "T-2052",
+      "account_id": "ACC-051",
+      "created_at": "2026-04-12T09:15:00",
+      "resolved_at": "2026-04-15T11:45:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "CSV export missing one column header",
+      "category": "bug"
+    }
+  ],
+  "ACC-052": [
+    {
+      "id": "T-2060",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-01T08:00:00",
+      "resolved_at": "2026-04-03T17:00:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "Saved view not loading for clinical team",
+      "category": "bug"
+    },
+    {
+      "id": "T-2061",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-05T12:00:00",
+      "resolved_at": "2026-04-07T09:30:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "Need API key rotated for compliance review",
+      "category": "access"
+    },
+    {
+      "id": "T-2062",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-08T14:00:00",
+      "resolved_at": "2026-04-10T10:00:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "Slow dashboard load on patient cohort report",
+      "category": "performance"
+    },
+    {
+      "id": "T-2063",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-11T11:00:00",
+      "resolved_at": "2026-04-13T16:00:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "Exported PDF formatting cut off on right margin",
+      "category": "bug"
+    },
+    {
+      "id": "T-2064",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-15T13:30:00",
+      "resolved_at": "2026-04-17T11:00:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "Webhook retry not honoring exponential backoff",
+      "category": "integration"
+    },
+    {
+      "id": "T-2065",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-18T10:00:00",
+      "resolved_at": "2026-04-20T14:30:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "Custom field validation tooltip missing translation",
+      "category": "bug"
+    },
+    {
+      "id": "T-2066",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-21T08:45:00",
+      "resolved_at": "2026-04-23T17:00:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "User invitation email rendering badly in Outlook",
+      "category": "bug"
+    },
+    {
+      "id": "T-2067",
+      "account_id": "ACC-052",
+      "created_at": "2026-04-23T15:00:00",
+      "resolved_at": null,
+      "severity": "medium",
+      "status": "open",
+      "subject": "Audit log filter dropdown not preserving selection",
+      "category": "bug"
+    }
+  ],
+  "ACC-053": [],
+  "ACC-054": [],
+  "ACC-055": [
+    {
+      "id": "T-2070",
+      "account_id": "ACC-055",
+      "created_at": "2026-04-02T09:00:00",
+      "resolved_at": "2026-04-05T14:00:00",
+      "severity": "high",
+      "status": "resolved",
+      "subject": "Production export failed during quarter close",
+      "category": "bug"
+    },
+    {
+      "id": "T-2071",
+      "account_id": "ACC-055",
+      "created_at": "2026-04-08T11:30:00",
+      "resolved_at": "2026-04-10T16:30:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "SSO redirect loop after IdP cert rotation",
+      "category": "access"
+    },
+    {
+      "id": "T-2072",
+      "account_id": "ACC-055",
+      "created_at": "2026-04-13T15:00:00",
+      "resolved_at": "2026-04-15T10:00:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "Typo in onboarding wizard step 3",
+      "category": "bug"
+    },
+    {
+      "id": "T-2073",
+      "account_id": "ACC-055",
+      "created_at": "2026-04-17T08:30:00",
+      "resolved_at": "2026-04-19T13:00:00",
+      "severity": "medium",
+      "status": "resolved",
+      "subject": "Bulk import failed silently on row 1043",
+      "category": "bug"
+    },
+    {
+      "id": "T-2074",
+      "account_id": "ACC-055",
+      "created_at": "2026-04-21T12:00:00",
+      "resolved_at": "2026-04-24T09:00:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "Workspace logo not displaying on shared report",
+      "category": "bug"
+    }
+  ],
+  "ACC-056": [],
+  "ACC-057": [
+    {
+      "id": "T-2080",
+      "account_id": "ACC-057",
+      "created_at": "2026-04-14T10:00:00",
+      "resolved_at": "2026-04-16T15:00:00",
+      "severity": "low",
+      "status": "resolved",
+      "subject": "Onboarding: how to invite a second admin?",
+      "category": "access"
+    }
   ]
 }

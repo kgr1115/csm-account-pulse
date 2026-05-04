@@ -698,5 +698,59 @@
       "score": 7,
       "comment": null
     }
-  ]
+  ],
+  "ACC-051": [],
+  "ACC-052": [
+    {
+      "account_id": "ACC-052",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 8,
+      "comment": null
+    },
+    {
+      "account_id": "ACC-052",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 8,
+      "comment": "Frequent small issues but support always closes them quickly."
+    }
+  ],
+  "ACC-053": [
+    {
+      "account_id": "ACC-053",
+      "submitted_at": "2026-03-04T14:00:00",
+      "score": 10,
+      "comment": "Already recommending you to two peer companies."
+    },
+    {
+      "account_id": "ACC-053",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 10,
+      "comment": null
+    }
+  ],
+  "ACC-054": [
+    {
+      "account_id": "ACC-054",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 9,
+      "comment": "Easy renewal — happy to sign multi-year."
+    }
+  ],
+  "ACC-055": [
+    {
+      "account_id": "ACC-055",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 7,
+      "comment": null
+    }
+  ],
+  "ACC-056": [
+    {
+      "account_id": "ACC-056",
+      "submitted_at": "2026-04-16T14:00:00",
+      "score": 2,
+      "comment": "Onboarding was painful and we are still finding gaps."
+    }
+  ],
+  "ACC-057": []
 }
