@@ -121,7 +121,7 @@ ACC-001,2026-03-04T14:00:00,8,
 ACC-001,2026-04-16T14:00:00,4,API reliability is unacceptable for our scale.
 ```
 
-Drop those four files into `data/csv/`, switch your `app.py` wiring from `FixtureDataSource` to `CsvDataSource`, and the dashboard renders against your data.
+Drop those four files into `data/csv/`, set `DATASOURCE=csv` in your `.env` file (or shell environment) before running `streamlit run app.py`, and the dashboard renders against your data. To point at a different directory, set `CSV_DIR=/path/to/your/csv/dir` alongside `DATASOURCE=csv`. The active source is shown in the sidebar caption ("Data source: `csv`") so you can confirm at a glance.
 
 ## Errors you might see
 

@@ -17,7 +17,8 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from briefing import generate_briefing
-from datasource import FixtureDataSource
+from datasource import DataSource, FixtureDataSource
+from datasources import CsvDataSource
 from health import compute_health
 from models import AccountState, HealthBucket
 
@@ -42,14 +43,59 @@ BUCKET_COLOR = {
 }
 
 
+def _active_datasource_name() -> str:
+    """Resolve the DATASOURCE env var to one of: 'fixtures', 'csv', 'salesforce'.
+    Anything unrecognized falls back to 'fixtures'."""
+    raw = os.environ.get("DATASOURCE", "fixtures").strip().lower()
+    if raw in ("csv", "salesforce"):
+        return raw
+    return "fixtures"
+
+
+def _build_datasource() -> DataSource:
+    """Factory: pick a DataSource based on DATASOURCE env var.
+
+    'csv' instantiates CsvDataSource against CSV_DIR (default 'data/csv').
+    'salesforce' is reserved for Phase 3a — falls back to fixtures for now.
+    Anything else (including unset) returns FixtureDataSource.
+
+    ValueError from CsvDataSource (missing dir or required file) is caught and
+    re-raised as a user-readable RuntimeError so the Streamlit page shows a
+    one-line message instead of a raw stack trace.
+    """
+    name = _active_datasource_name()
+    if name == "csv":
+        csv_dir = os.environ.get("CSV_DIR", "data/csv")
+        try:
+            return CsvDataSource(csv_dir)
+        except ValueError as e:
+            raise RuntimeError(
+                f"Could not load CSV data source from '{csv_dir}': {e}. "
+                "Check CSV_DIR and confirm accounts.csv, usage_events.csv, "
+                "tickets.csv, nps_responses.csv all exist in that directory."
+            ) from e
+    if name == "salesforce":
+        # Phase 3a — SalesforceDataSource not implemented yet. Fall back to fixtures.
+        return FixtureDataSource()
+    return FixtureDataSource()
+
+
 @st.cache_data(show_spinner=False)
 def load_scored_accounts(_cache_version: str = FIXTURES_VERSION) -> list[AccountState]:
     """Returns AccountStates sorted worst-health first. _cache_version arg lets us
     invalidate when fixtures change (Streamlit caches on input hash, not file content)."""
-    ds = FixtureDataSource()
+    ds = _build_datasource()
     states: list[AccountState] = []
     since = TODAY - timedelta(days=USAGE_LOOKBACK_DAYS)
-    for a in ds.list_accounts():
+    try:
+        accounts = ds.list_accounts()
+    except ValueError as e:
+        # CsvDataSource validates lazily on first read — surface as a readable
+        # message instead of a raw Pydantic / CSV stack trace in the browser.
+        raise RuntimeError(
+            f"Could not load data from {type(ds).__name__}: {e}"
+        ) from e
+    for a in accounts:
         events = ds.get_usage_events(a.id, since=since)
         all_events_for_score = ds.get_usage_events(a.id)
         tickets = ds.get_tickets(a.id)
@@ -163,6 +209,8 @@ def render_sidebar(states: list[AccountState]) -> tuple[set[HealthBucket], str |
     csm_filter = None if csm_filter == "All" else csm_filter
 
     st.sidebar.divider()
+    ds_name = _active_datasource_name()
+    st.sidebar.caption(f"Data source: `{ds_name}` (override via `DATASOURCE` in `.env`)")
     api_set = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
     st.sidebar.markdown("**LLM source:** " + ("Anthropic API" if api_set else "Deterministic stub"))
     if api_set:

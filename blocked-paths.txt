@@ -1,0 +1,30 @@
+# blocked-paths.txt — publisher's personal-data guard list
+#
+# Each non-comment, non-empty line is a path or glob that MUST NEVER reach a public remote.
+# The publisher reads this file and runs a deterministic match against `git diff --cached --name-only`.
+# Any cached path that matches a non-comment line below -> publisher REFUSES the push.
+#
+# Format:
+#   - Lines starting with `#` are comments.
+#   - Blank lines are ignored.
+#   - All other lines are entries. Two entry kinds are supported:
+#       * Literal paths (no glob characters): exact match against the cached path.
+#       * Globs (containing `*` or `?`): shell-glob match against each cached path.
+#
+# Examples (uncomment and adapt if you start handling sensitive data):
+#   data/originals/                  # the user's read-only source material directory
+#   data/originals/*                 # all files under it
+#   reports/sent/*                   # generated real user artifacts
+#   contact.json                     # config file with secrets / identifying info
+#   logs/*.md                        # logs with real session content
+#
+# ---
+#
+# csm-account-pulse handles synthetic fixtures only — no real customer data.
+# This file is intentionally empty (publisher's guard soft-passes on empty).
+# If you ever add real data, add the path or glob below and never delete entries
+# without an explicit reason.
+#
+# user-supplied entries below
+data/csv/*
+data/csv/
