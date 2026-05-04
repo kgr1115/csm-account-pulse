@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 
 from briefing import generate_briefing
 from datasource import DataSource, FixtureDataSource
-from datasources import CsvDataSource
+from datasources import CsvDataSource, SalesforceDataSource
 from health import compute_health
 from models import AccountState, HealthBucket
 
@@ -56,7 +56,9 @@ def _build_datasource() -> DataSource:
     """Factory: pick a DataSource based on DATASOURCE env var.
 
     'csv' instantiates CsvDataSource against CSV_DIR (default 'data/csv').
-    'salesforce' is reserved for Phase 3a — falls back to fixtures for now.
+    'salesforce' instantiates SalesforceDataSource from SF_* env vars; if those
+    are missing, falls back to FixtureDataSource and the sidebar surfaces the
+    miss so the user knows why the demo data is showing.
     Anything else (including unset) returns FixtureDataSource.
 
     ValueError from CsvDataSource (missing dir or required file) is caught and
@@ -75,9 +77,22 @@ def _build_datasource() -> DataSource:
                 "tickets.csv, nps_responses.csv all exist in that directory."
             ) from e
     if name == "salesforce":
-        # Phase 3a — SalesforceDataSource not implemented yet. Fall back to fixtures.
-        return FixtureDataSource()
+        from datasources.salesforce_source import from_env as _sf_from_env
+        try:
+            return _sf_from_env()
+        except ValueError:
+            # Missing creds — fall back to fixtures. The sidebar caption
+            # surfaces this so the user understands which path is active.
+            return FixtureDataSource()
     return FixtureDataSource()
+
+
+def _salesforce_credentials_present() -> bool:
+    """True iff all three SF_* required env vars are set and non-empty."""
+    return all(
+        bool(os.environ.get(k, "").strip())
+        for k in ("SF_USERNAME", "SF_PASSWORD", "SF_SECURITY_TOKEN")
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -211,6 +226,18 @@ def render_sidebar(states: list[AccountState]) -> tuple[set[HealthBucket], str |
     st.sidebar.divider()
     ds_name = _active_datasource_name()
     st.sidebar.caption(f"Data source: `{ds_name}` (override via `DATASOURCE` in `.env`)")
+    if ds_name == "salesforce":
+        if _salesforce_credentials_present():
+            st.sidebar.warning(
+                "Phase 3b pending — Cases (tickets) and NPS data not yet loaded; "
+                "account health may be artificially inflated."
+            )
+        else:
+            st.sidebar.warning(
+                "DATASOURCE=salesforce but SF_USERNAME / SF_PASSWORD / "
+                "SF_SECURITY_TOKEN are not all set in `.env`. Falling back to "
+                "synthetic fixtures."
+            )
     api_set = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
     st.sidebar.markdown("**LLM source:** " + ("Anthropic API" if api_set else "Deterministic stub"))
     if api_set:

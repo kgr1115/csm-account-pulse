@@ -41,6 +41,8 @@ ds = CsvDataSource("/path/to/your/csv/dir")
 
 See `docs/datasources/csv.md` for the column schema, accepted date formats, required-vs-optional columns, and a worked example. The default runtime directory `data/csv/` is gitignored so a real CRM export can never accidentally land in git; synthetic 5-row examples for shape reference live under `data/samples/`.
 
+`SalesforceDataSource` (Phase 3a) connects directly to a Salesforce org instead of CSV. Set `DATASOURCE=salesforce` plus `SF_USERNAME` / `SF_PASSWORD` / `SF_SECURITY_TOKEN` in `.env`, and the dashboard issues SOQL against your Accounts and Tasks. Cases (tickets) and NPS responses currently return empty (Phase 3b) — when this source is active the dashboard surfaces a "Phase 3b pending" warning so the empty columns are not mistaken for healthy accounts. See `docs/datasources/salesforce.md` for credential setup, field mapping, rate-limit behavior, and override patterns for non-standard org schemas.
+
 ## What's inside
 
 - **`app.py`** — the Streamlit dashboard. One page; opens on accounts ranked by health bucket then score.
