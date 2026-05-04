@@ -36,3 +36,7 @@ logs/
 *.log
 tmp/
 scratch/
+
+# Live CRM exports — never commit a user's real customer data.
+# data/samples/ stays tracked (synthetic, 5-row demo); data/csv/ is the runtime dir.
+data/csv/

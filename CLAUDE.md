@@ -10,10 +10,10 @@ This repo is portfolio code — built to be cloned, run, and read by hiring mana
 
 ## What this project is NOT
 
-- **Not a real CRM integration.** Synthetic JSON fixtures only — no OAuth into Salesforce / HubSpot / Gainsight.
+- **Not a real CRM integration (yet).** OAuth into Salesforce / HubSpot / Gainsight is roadmap work, not present today. The Phase 2 `CsvDataSource` reads CSV exports of a user's CRM; that data lives on the user's machine only.
 - **Not a CSM workflow / CRUD tool.** Read-only insights; no edit-account, create-task, log-activity, or notes features.
 - **Not an action-taking system.** No auto-email, auto-task, auto-Slack, auto-digest. Dashboard surfaces; humans act.
-- **Not a real-customer-data system.** Synthetic fixtures only.
+- **Real customer data stays local, never in the repo.** Committed fixtures and samples are synthetic. Real CRM exports may land in `data/csv/` on the user's own machine (gitignored) but never get committed and never appear in screenshots.
 - No paid SaaS dependencies beyond the optional Anthropic API call for briefing generation.
 - No hosted infra. Local-only execution.
 

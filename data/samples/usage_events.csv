@@ -1,0 +1,6 @@
+account_id,timestamp,event_type,feature,user_id
+SAMPLE-001,2026-04-28T09:15:00,session_start,dashboard,u-SAMPLE-001-1
+SAMPLE-002,2026-04-29T10:30:00,feature_used,api,u-SAMPLE-002-1
+SAMPLE-003,2026-04-30T14:00:00,export_generated,,u-SAMPLE-003-1
+SAMPLE-004,2026-05-01T08:45:00,api_call,api,u-SAMPLE-004-1
+SAMPLE-005,2026-05-02T16:20:00,feature_used,dashboard,u-SAMPLE-005-1

@@ -1,0 +1,6 @@
+id,name,industry,employee_count,plan_tier,arr_usd,contract_start,renewal_date,csm_owner,primary_contact_name,primary_contact_title
+SAMPLE-001,Acme Synthetic Co,Manufacturing,150,Pro,120000,2025-03-15,2026-08-20,Demo Owner,Sample Contact A,VP Engineering
+SAMPLE-002,Buyer Demo Inc,SaaS,80,Starter,36000,2025-01-10,2026-07-05,Demo Owner,Sample Contact B,Director of Operations
+SAMPLE-003,Carrier Mockworks,Logistics,310,Enterprise,420000,2024-11-01,2026-09-15,Demo Owner,Sample Contact C,Chief Operations Officer
+SAMPLE-004,Dryrun Robotics,Manufacturing,45,Starter,18000,2025-06-22,2026-12-01,Demo Owner,Sample Contact D,Head of Customer Success
+SAMPLE-005,Examply Health,Healthcare,500,Enterprise,640000,2025-08-05,2027-02-14,Demo Owner,Sample Contact E,VP Customer Experience

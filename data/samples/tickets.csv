@@ -1,0 +1,6 @@
+id,account_id,created_at,resolved_at,severity,status,subject,category
+T-SAMPLE-1,SAMPLE-001,2026-04-20T11:00:00,2026-04-22T15:30:00,medium,resolved,Onboarding question on bulk import,question
+T-SAMPLE-2,SAMPLE-002,2026-04-25T09:30:00,,high,open,Export endpoint returning 500,bug
+T-SAMPLE-3,SAMPLE-003,2026-04-26T13:15:00,,critical,pending,SSO login regression after upgrade,bug
+T-SAMPLE-4,SAMPLE-004,2026-04-27T16:00:00,2026-04-28T10:00:00,low,resolved,Feature request: CSV download,feature_request
+T-SAMPLE-5,SAMPLE-005,2026-04-29T08:30:00,,medium,open,Audit log filter not honoring date range,bug

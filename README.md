@@ -29,6 +29,18 @@ python -m streamlit run app.py
 
 `pytest` runs the test suite. Anthropic API key is optional — without one, the dashboard renders briefings from a deterministic stub so the demo runs end-to-end. Copy `.env.example` to `.env` and paste your key there to switch on the live model.
 
+## Bring your own CRM data
+
+`CsvDataSource` lets a CSM (or their data person) point the dashboard at a real CRM export instead of the synthetic fixtures. Drop four CSV files — `accounts.csv`, `usage_events.csv`, `tickets.csv`, `nps_responses.csv` — into a directory on your machine and the same briefing path runs against your data. The fixture path stays the default; nothing about the fork-and-run demo changes.
+
+```python
+from datasources import CsvDataSource
+
+ds = CsvDataSource("/path/to/your/csv/dir")
+```
+
+See `docs/datasources/csv.md` for the column schema, accepted date formats, required-vs-optional columns, and a worked example. The default runtime directory `data/csv/` is gitignored so a real CRM export can never accidentally land in git; synthetic 5-row examples for shape reference live under `data/samples/`.
+
 ## What's inside
 
 - **`app.py`** — the Streamlit dashboard. One page; opens on accounts ranked by health bucket then score.
